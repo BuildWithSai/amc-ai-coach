@@ -1,122 +1,152 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+
+// Shape of a study session saved by the user
+type StudySession = {
+  topic: string;
+  attempted: string;
+  correct: string;
+  incorrect: string;
+  notes: string;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [topic, setTopic] = useState("");
+  const [attempted, setAttempted] = useState("");
+  const [correct, setCorrect] = useState("");
+  const [incorrect, setIncorrect] = useState("");
+  const [notes, setNotes] = useState("");
 
+  // Saved study sessions
+  const [sessions, setSessions] = useState<StudySession[]>([]);
+  // Save session and reset form
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!topic || !attempted || !correct || !incorrect) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    if (Number(correct) + Number(incorrect) !== Number(attempted)) {
+      alert("Correct + Incorrect must equal Attempted");
+      return;
+    }
+
+    const newSession = {
+      topic,
+      attempted,
+      correct,
+      incorrect,
+      notes,
+    };
+
+    setSessions([...sessions, newSession]);
+
+    setTopic("");
+    setAttempted("");
+    setCorrect("");
+    setIncorrect("");
+    setNotes("");
+  };
+  // console.log(sessions);
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+    <div>
+      <h1>AMC AI Coach</h1>
+      <h2>Add Study Session</h2>
+      <form onSubmit={handleSave}>
         <div>
-          <h1>Get started</h1>
+          <label>Topic</label>
+          <br />
+          <input
+            type="text"
+            placeholder="Cardiology"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+          />
+        </div>
+
+        <br />
+
+        <div>
+          <label>Questions Attempted</label>
+          <br />
+          <input
+            type="number"
+            value={attempted}
+            onChange={(e) => setAttempted(e.target.value)}
+          />
+        </div>
+
+        <br />
+
+        <div>
+          <label>Correct Answers</label>
+          <br />
+          <input
+            type="number"
+            value={correct}
+            onChange={(e) => setCorrect(e.target.value)}
+          />
+        </div>
+
+        <br />
+
+        <div>
+          <label>Incorrect Answers</label>
+          <br />
+          <input
+            type="number"
+            value={incorrect}
+            onChange={(e) => setIncorrect(e.target.value)}
+          />
+        </div>
+
+        <br />
+
+        <div>
+          <label>Notes</label>
+          <br />
+          <textarea
+            rows={4}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          ></textarea>
+        </div>
+
+        <br />
+
+        <button type="submit">Save Session</button>
+      </form>
+      <h2>Saved Sessions</h2>
+      {/* // Display previously saved study sessions */}
+      {sessions.map((session, index) => (
+        <div key={index}>
           <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+            <strong>Topic:</strong> {session.topic}
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+          <p>
+            <strong>Attempted:</strong> {session.attempted}
+          </p>
+          <p>
+            <strong>Correct:</strong> {session.correct}
+          </p>
+          <p>
+            <strong>Incorrect:</strong> {session.incorrect}
+          </p>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+          <p>
+            <strong>Accuracy:</strong>{" "}
+            {Math.round(
+              (Number(session.correct) / Number(session.attempted)) * 100,
+            )}
+            %
+          </p>
+          <hr />
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      ))}
+    </div>
+  );
 }
 
-export default App
+export default App;
