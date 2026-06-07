@@ -9,6 +9,13 @@ type StudySession = {
   incorrect: string;
   notes: string;
 };
+// Shape of a mistake recorded by the user
+type Mistake = {
+  topic: string;
+  questionSummary: string;
+  whyWrong: string;
+  correctConcept: string;
+};
 
 function App() {
   const [topic, setTopic] = useState("");
@@ -16,6 +23,14 @@ function App() {
   const [correct, setCorrect] = useState("");
   const [incorrect, setIncorrect] = useState("");
   const [notes, setNotes] = useState("");
+
+  // Mistake form state
+  const [mistakeTopic, setMistakeTopic] = useState("");
+  const [questionSummary, setQuestionSummary] = useState("");
+  const [whyWrong, setWhyWrong] = useState("");
+  const [correctConcept, setCorrectConcept] = useState("");
+
+  const [mistakes, setMistakes] = useState<Mistake[]>([]);
 
   // Saved study sessions
   const [sessions, setSessions] = useState<StudySession[]>([]);
@@ -49,6 +64,31 @@ function App() {
     setIncorrect("");
     setNotes("");
   };
+
+  // Save mistake and reset form
+  const handleSaveMistake = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!mistakeTopic || !questionSummary || !whyWrong || !correctConcept) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    const newMistake = {
+      topic: mistakeTopic,
+      questionSummary,
+      whyWrong,
+      correctConcept,
+    };
+
+    setMistakes([...mistakes, newMistake]);
+
+    setMistakeTopic("");
+    setQuestionSummary("");
+    setWhyWrong("");
+    setCorrectConcept("");
+  };
+
   // console.log(sessions);
   return (
     <div>
@@ -141,6 +181,79 @@ function App() {
               (Number(session.correct) / Number(session.attempted)) * 100,
             )}
             %
+          </p>
+          <hr />
+        </div>
+      ))}
+
+      <h2>Add Mistake</h2>
+
+      <form onSubmit={handleSaveMistake}>
+        <div>
+          <label>Topic</label>
+          <br />
+          <input
+            type="text"
+            value={mistakeTopic}
+            onChange={(e) => setMistakeTopic(e.target.value)}
+          />
+        </div>
+
+        <br />
+
+        <div>
+          <label>Question Summary</label>
+          <br />
+          <textarea
+            rows={3}
+            value={questionSummary}
+            onChange={(e) => setQuestionSummary(e.target.value)}
+          />
+        </div>
+
+        <br />
+
+        <div>
+          <label>Why I Got It Wrong</label>
+          <br />
+          <textarea
+            rows={3}
+            value={whyWrong}
+            onChange={(e) => setWhyWrong(e.target.value)}
+          />
+        </div>
+
+        <br />
+
+        <div>
+          <label>Correct Concept</label>
+          <br />
+          <textarea
+            rows={3}
+            value={correctConcept}
+            onChange={(e) => setCorrectConcept(e.target.value)}
+          />
+        </div>
+
+        <br />
+
+        <button type="submit">Save Mistake</button>
+      </form>
+      <h2>Saved Mistakes</h2>
+
+      {mistakes.map((mistake, index) => (
+        <div key={index}>
+          <p>
+            <strong>Topic:</strong> {mistake.topic}
+          </p>
+          <p>
+            <strong>Question:</strong> {mistake.questionSummary}
+          </p>
+          <p>
+            <strong>Why Wrong:</strong> {mistake.whyWrong}
+          </p>
+          <p>
+            <strong>Correct Concept:</strong> {mistake.correctConcept}
           </p>
           <hr />
         </div>
