@@ -1,40 +1,58 @@
 import { useState } from "react";
-import type { StudySession } from "../types";
+import { v4 as uuidv4 } from "uuid";
+import type { StudySession, AMCTopic } from "../types";
+import { getSessions, saveSession } from "../services/storage";
+
+// AMC topic list — drives the dropdown. Single source of truth.
+const AMC_TOPICS: AMCTopic[] = [
+  "Cardiology",
+  "Respiratory Medicine",
+  "Gastroenterology",
+  "Neurology",
+  "Obstetrics & Gynaecology",
+  "Paediatrics",
+  "Psychiatry",
+  "Surgery",
+  "Pharmacology",
+  "Endocrinology",
+  "Infectious Diseases",
+  "Renal Medicine",
+  "Musculoskeletal",
+  "Dermatology",
+  "Haematology",
+];
 
 function StudySessionsPage() {
-  const [topic, setTopic] = useState("");
+  const [topic, setTopic] = useState<AMCTopic>("Cardiology");
   const [attempted, setAttempted] = useState("");
   const [correct, setCorrect] = useState("");
   const [incorrect, setIncorrect] = useState("");
   const [notes, setNotes] = useState("");
 
-  const [sessions, setSessions] = useState<StudySession[]>([]);
+  // Load from storage, not local state — survives page refresh
+  const [sessions, setSessions] = useState<StudySession[]>(getSessions);
 
-  // Save session and reset form
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!topic || !attempted || !correct || !incorrect) {
-      alert("Please fill all required fields");
-      return;
-    }
 
     if (Number(correct) + Number(incorrect) !== Number(attempted)) {
       alert("Correct + Incorrect must equal Attempted");
       return;
     }
 
-    const newSession = {
+    const newSession: StudySession = {
+      id: uuidv4(),
+      createdAt: new Date().toISOString(),
       topic,
-      attempted,
-      correct,
-      incorrect,
+      attempted: Number(attempted),
+      correct: Number(correct),
+      incorrect: Number(incorrect),
       notes,
     };
 
-    setSessions([...sessions, newSession]);
+    saveSession(newSession);
+    setSessions(getSessions());
 
-    setTopic("");
     setAttempted("");
     setCorrect("");
     setIncorrect("");
@@ -44,21 +62,23 @@ function StudySessionsPage() {
   return (
     <div>
       <h1>Study Sessions</h1>
-
       <h2>Add Study Session</h2>
 
       <form onSubmit={handleSave}>
         <div>
           <label>Topic</label>
           <br />
-          <input
-            type="text"
-            placeholder="Cardiology"
+          <select
             value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-          />
+            onChange={(e) => setTopic(e.target.value as AMCTopic)}
+          >
+            {AMC_TOPICS.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
         </div>
-
         <br />
 
         <div>
@@ -70,7 +90,6 @@ function StudySessionsPage() {
             onChange={(e) => setAttempted(e.target.value)}
           />
         </div>
-
         <br />
 
         <div>
@@ -82,7 +101,6 @@ function StudySessionsPage() {
             onChange={(e) => setCorrect(e.target.value)}
           />
         </div>
-
         <br />
 
         <div>
@@ -94,7 +112,6 @@ function StudySessionsPage() {
             onChange={(e) => setIncorrect(e.target.value)}
           />
         </div>
-
         <br />
 
         <div>
@@ -106,40 +123,27 @@ function StudySessionsPage() {
             onChange={(e) => setNotes(e.target.value)}
           />
         </div>
-
         <br />
 
         <button type="submit">Save Session</button>
       </form>
 
       <h2>Saved Sessions</h2>
-
-      {sessions.map((session, index) => (
-        <div key={index}>
+      {sessions.map((session) => (
+        <div key={session.id}>
           <p>
             <strong>Topic:</strong> {session.topic}
           </p>
-
           <p>
             <strong>Attempted:</strong> {session.attempted}
           </p>
-
           <p>
             <strong>Correct:</strong> {session.correct}
           </p>
-
-          <p>
-            <strong>Incorrect:</strong> {session.incorrect}
-          </p>
-
           <p>
             <strong>Accuracy:</strong>{" "}
-            {Math.round(
-              (Number(session.correct) / Number(session.attempted)) * 100,
-            )}
-            %
+            {Math.round((session.correct / session.attempted) * 100)}%
           </p>
-
           <hr />
         </div>
       ))}
