@@ -93,6 +93,7 @@ function DashboardPage() {
 
           {/* Evidence panel always shows computed data alongside AI text */}
           <AIInsightCard
+            insightType="dashboard_insight"
             evidence={[
               { label: "Weakest topic", value: weakTopics[0]?.topic },
               {

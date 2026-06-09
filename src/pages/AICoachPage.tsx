@@ -138,6 +138,7 @@ function AICoachPage() {
           </button>
 
           <AIInsightCard
+            insightType="weak_topic_analysis"
             evidence={[
               {
                 label: "Topics below 60%",
@@ -172,6 +173,7 @@ function AICoachPage() {
               </button>
 
               <AIInsightCard
+                insightType="mistake_pattern_analysis"
                 evidence={[
                   { label: "Total mistakes", value: `${mistakes.length}` },
                   {
@@ -197,6 +199,7 @@ function AICoachPage() {
           </button>
 
           <AIInsightCard
+            insightType="recommendations"
             evidence={[
               { label: "Weak topics", value: `${weakTopics.length}` },
               { label: "Total mistakes", value: `${mistakes.length}` },
