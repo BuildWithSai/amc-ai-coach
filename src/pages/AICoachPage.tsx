@@ -6,10 +6,12 @@ import {
 } from "../analytics/computeAnalytics";
 import { buildWeakTopicAnalysisPrompt } from "../prompts/weakTopicAnalysis";
 import { buildMistakePatternAnalysisPrompt } from "../prompts/mistakePatternAnalysis";
+import { buildRecommendationsPrompt } from "../prompts/recommendations";
 import { callOpenAI } from "../services/openai";
 import AIInsightCard from "../components/AIInsightCard";
 import type { WeakTopicAnalysisResponse } from "../types/aiResponses";
 import type { MistakePatternResponse } from "../types/aiResponses";
+import type { RecommendationResponse } from "../types/aiResponses";
 
 function AICoachPage() {
   // Load data and compute analytics — same pattern as dashboard
@@ -29,6 +31,13 @@ function AICoachPage() {
     useState<MistakePatternResponse | null>(null);
   const [isLoadingMistakePattern, setIsLoadingMistakePattern] = useState(false);
   const [mistakePatternError, setMistakePatternError] = useState(false);
+
+  // State for recommendations section
+  const [recommendationInsight, setRecommendationInsight] =
+    useState<RecommendationResponse | null>(null);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] =
+    useState(false);
+  const [recommendationError, setRecommendationError] = useState(false);
 
   const handleWeakTopicAnalysis = async () => {
     if (weakTopics.length === 0) return;
@@ -83,6 +92,31 @@ function AICoachPage() {
     }
 
     setIsLoadingMistakePattern(false);
+  };
+
+  const handleRecommendations = async () => {
+    // Need at least some data to generate recommendations
+    if (weakTopics.length === 0) return;
+
+    setIsLoadingRecommendations(true);
+    setRecommendationError(false);
+
+    const systemPrompt =
+      "You are an AMC exam study coach. Return only valid JSON.";
+    const userPrompt = buildRecommendationsPrompt(weakTopics, mistakeFrequency);
+
+    const result = await callOpenAI<RecommendationResponse>(
+      systemPrompt,
+      userPrompt,
+    );
+
+    if (result) {
+      setRecommendationInsight(result);
+    } else {
+      setRecommendationError(true);
+    }
+
+    setIsLoadingRecommendations(false);
   };
 
   return (
@@ -152,6 +186,26 @@ function AICoachPage() {
               />
             </>
           )}
+
+          {/* Recommendations */}
+          <h2>Recommendations</h2>
+          <button
+            onClick={handleRecommendations}
+            disabled={isLoadingRecommendations}
+          >
+            {isLoadingRecommendations ? "Generating..." : "Get Recommendations"}
+          </button>
+
+          <AIInsightCard
+            evidence={[
+              { label: "Weak topics", value: `${weakTopics.length}` },
+              { label: "Total mistakes", value: `${mistakes.length}` },
+              { label: "Most urgent", value: weakTopics[0]?.topic },
+            ]}
+            insight={recommendationInsight?.summary ?? null}
+            isLoading={isLoadingRecommendations}
+            error={recommendationError}
+          />
         </>
       )}
     </div>

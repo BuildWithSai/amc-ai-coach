@@ -17,3 +17,9 @@ Initial prompt. Inputs: RankedTopic[], MistakeFrequency[]
 ### v1 — 2026-06-09
 
 Initial prompt. Inputs: Mistake[], MistakeFrequency[]
+
+## recommendations
+
+### v1 — 2026-06-09
+
+Initial prompt. Inputs: RankedTopic[], MistakeFrequency[]
