@@ -54,7 +54,7 @@ function DashboardPage() {
   };
 
   return (
-    <div>
+    <div className="bg-red-500 p-8">
       <h1>Dashboard</h1>
 
       {/* If no sessions logged yet, show onboarding message */}
