@@ -59,7 +59,10 @@ function DashboardPage() {
 
       {/* If no sessions logged yet, show onboarding message */}
       {sessions.length === 0 ? (
-        <p>Start logging study sessions to see your analytics.</p>
+        <div>
+          <p>Start logging study sessions to see your analytics.</p>
+          <p>Head to Study Sessions to log your first session.</p>
+        </div>
       ) : (
         <>
           <h2>Weak Topics</h2>
@@ -87,6 +90,9 @@ function DashboardPage() {
           <h2>AI Insight</h2>
 
           {/* AI is never called automatically — always user initiated */}
+          {sessions.length < 3 && (
+            <p>Keep logging — insights improve with more data.</p>
+          )}
           <button onClick={handleGenerate} disabled={isLoading}>
             {isLoading ? "Generating..." : "Generate Insight"}
           </button>

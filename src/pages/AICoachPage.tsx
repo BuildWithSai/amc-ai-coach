@@ -130,6 +130,16 @@ function AICoachPage() {
         <>
           {/* Weak Topic Analysis */}
           <h2>Weak Topic Analysis</h2>
+          {weakTopics.length === 1 && (
+            <p>
+              Only one topic logged so far — insights will improve as you log
+              more topics.
+            </p>
+          )}
+          <button
+            onClick={handleWeakTopicAnalysis}
+            disabled={isLoadingWeakTopics}
+          ></button>
           <button
             onClick={handleWeakTopicAnalysis}
             disabled={isLoadingWeakTopics}
