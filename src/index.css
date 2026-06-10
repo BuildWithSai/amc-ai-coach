@@ -1,10 +1,30 @@
 @import "tailwindcss";
 
-/* Base styles — these will be replaced by Tailwind classes as we build the UI */
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --animate-row-highlight: row-highlight 800ms ease-out forwards;
+
+  /* ── Design system color tokens ── */
+  --color-accent:       #4F46E5;  /* indigo-600  — primary action / active state */
+  --color-accent-hover: #4338CA;  /* indigo-700  — button hover */
+  --color-accent-soft:  #EEF2FF;  /* indigo-50   — pill bg / active nav bg */
+  --color-secondary:    #71717A;  /* zinc-500    — labels, subtitles */
+  --color-tertiary:     #A1A1AA;  /* zinc-400    — table headers, dates, counts */
+  --color-border:       rgba(0,0,0,0.07);   /* card + sidebar borders */
+  --color-border-row:   rgba(0,0,0,0.05);   /* table row dividers */
+  --color-border-input: rgba(0,0,0,0.12);   /* form input borders */
+}
+
+@keyframes row-highlight {
+  from { background-color: #EEF2FF; }
+  to   { background-color: transparent; }
+}
+
 body {
   margin: 0;
   background-color: #f7f6f3;
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  font-family: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
