@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { LayoutDashboard, BookOpen, AlertTriangle, Sparkles, BarChart3 } from "lucide-react";
+import {
+  LayoutDashboard,
+  BookOpen,
+  AlertTriangle,
+  Sparkles,
+  BarChart3,
+} from "lucide-react";
 import { getSessions, getMistakes } from "../services/storage";
 import {
   getRankedWeakTopics,
@@ -123,8 +129,17 @@ function AICoachPage() {
 
   // ── Trend → delta colour mapping ──────────────────────────────────
   const trendDelta = (trend?: string) => ({
-    delta: trend === "improving" ? "↑ improving" : trend === "declining" ? "↓ declining" : "— stable",
-    deltaColor: (trend === "improving" ? "green" : trend === "declining" ? "red" : "amber") as "green" | "red" | "amber",
+    delta:
+      trend === "improving"
+        ? "↑ improving"
+        : trend === "declining"
+          ? "↓ declining"
+          : "— stable",
+    deltaColor: (trend === "improving"
+      ? "green"
+      : trend === "declining"
+        ? "red"
+        : "amber") as "green" | "red" | "amber",
   });
 
   // ── Secondary "Generate" button ───────────────────────────────────
@@ -151,43 +166,57 @@ function AICoachPage() {
           <span className="inline-block h-2.5 w-2.5 animate-spin rounded-full border-[1.5px] border-zinc-400 border-t-transparent" />
           {loadingLabel}
         </>
-      ) : label}
+      ) : (
+        label
+      )}
     </button>
   );
 
   return (
     <div className="fixed inset-0 z-50 flex overflow-hidden bg-zinc-50">
-
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
       <aside className="flex h-full w-60 shrink-0 flex-col border-r border-black/[0.07] bg-white">
-
         {/* Brand header */}
         <div className="flex items-center gap-2.5 px-5 py-5">
           <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded bg-accent text-[11px] font-medium text-white">
             AI
           </div>
-          <span className="text-[14px] font-semibold text-zinc-900">AMC Coach</span>
+          <span className="text-[14px] font-semibold text-zinc-900">
+            AMC Coach
+          </span>
         </div>
 
         {/* Nav */}
         <nav className="flex-1 space-y-0.5 px-3 pt-1">
-          <Link to="/" className="flex w-full items-center gap-3 rounded-[7px] px-3 py-2 text-[13.5px] font-medium text-secondary transition-colors duration-150 hover:text-zinc-900">
+          <Link
+            to="/"
+            className="flex w-full items-center gap-3 rounded-[7px] px-3 py-2 text-[13.5px] font-medium text-secondary transition-colors duration-150 hover:text-zinc-900"
+          >
             <LayoutDashboard className="h-4 w-4 shrink-0" />
             Dashboard
           </Link>
 
-          <Link to="/study-sessions" className="flex w-full items-center gap-3 rounded-[7px] px-3 py-2 text-[13.5px] font-medium text-secondary transition-colors duration-150 hover:text-zinc-900">
+          <Link
+            to="/study-sessions"
+            className="flex w-full items-center gap-3 rounded-[7px] px-3 py-2 text-[13.5px] font-medium text-secondary transition-colors duration-150 hover:text-zinc-900"
+          >
             <BookOpen className="h-4 w-4 shrink-0" />
             Study Sessions
           </Link>
 
-          <Link to="/mistakes" className="flex w-full items-center gap-3 rounded-[7px] px-3 py-2 text-[13.5px] font-medium text-secondary transition-colors duration-150 hover:text-zinc-900">
+          <Link
+            to="/mistakes"
+            className="flex w-full items-center gap-3 rounded-[7px] px-3 py-2 text-[13.5px] font-medium text-secondary transition-colors duration-150 hover:text-zinc-900"
+          >
             <AlertTriangle className="h-4 w-4 shrink-0" />
             Mistakes
           </Link>
 
           {/* AI Coach — active */}
-          <Link to="/ai-coach" className="flex w-full items-center gap-3 rounded-[7px] bg-accent-soft px-3 py-2 text-[13.5px] font-medium text-accent transition-colors duration-150">
+          <Link
+            to="/ai-coach"
+            className="flex w-full items-center gap-3 rounded-[7px] bg-accent-soft px-3 py-2 text-[13.5px] font-medium text-accent transition-colors duration-150"
+          >
             <Sparkles className="h-4 w-4 shrink-0" />
             AI Coach
           </Link>
@@ -208,14 +237,14 @@ function AICoachPage() {
       {/* ── Main content ─────────────────────────────────────────────────── */}
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-[900px] px-9 py-9">
-
           {/* Page header */}
           <div className="mb-7">
             <h1 className="text-[20px] font-semibold tracking-[-0.02em] text-zinc-900">
               AI coach
             </h1>
             <p className="mt-1 text-sm text-secondary">
-              Interpretations of your computed analytics — every insight shows its evidence.
+              Interpretations of your computed analytics — every insight shows
+              its evidence.
             </p>
           </div>
 
@@ -225,14 +254,15 @@ function AICoachPage() {
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft">
                 <Sparkles className="h-5 w-5 text-accent" />
               </div>
-              <p className="text-[14px] font-semibold text-zinc-900">No study data yet</p>
+              <p className="text-[14px] font-semibold text-zinc-900">
+                No study data yet
+              </p>
               <p className="mt-1 max-w-[280px] text-[13px] text-secondary">
                 Log study sessions and mistakes to unlock AI-generated insights.
               </p>
             </div>
           ) : (
             <div className="space-y-6">
-
               {/* ── 1. Weak Topic Analysis ─────────────────────────────── */}
               <div className="overflow-hidden rounded-[10px] border border-black/[0.07] bg-white">
                 <div className="flex items-center justify-between border-b border-black/[0.07] px-6 py-4">
@@ -257,18 +287,24 @@ function AICoachPage() {
 
                 <div className="px-6 py-5">
                   {/* Placeholder before first generation */}
-                  {!isLoadingWeakTopics && !weakTopicError && !weakTopicInsight && (
-                    <p className="text-[13px] text-tertiary">
-                      Ranks your weakest topics from session accuracy and explains why each is lagging.
-                    </p>
-                  )}
+                  {!isLoadingWeakTopics &&
+                    !weakTopicError &&
+                    !weakTopicInsight && (
+                      <p className="text-[13px] text-tertiary">
+                        Ranks your weakest topics from session accuracy and
+                        explains why each is lagging.
+                      </p>
+                    )}
 
                   <AIInsightCard
                     insightType="weak_topic_analysis"
                     evidence={[
                       {
                         label: "Topics below 60%",
-                        value: String(weakTopics.filter((t) => t.averageAccuracy < 60).length),
+                        value: String(
+                          weakTopics.filter((t) => t.averageAccuracy < 60)
+                            .length,
+                        ),
                       },
                       {
                         label: "Most urgent",
@@ -284,7 +320,9 @@ function AICoachPage() {
                     insight={weakTopicInsight?.topInsight ?? null}
                     isLoading={isLoadingWeakTopics}
                     error={weakTopicError}
-                    keyTakeaway={weakTopicInsight?.weakTopics[0]?.suggestedAction ?? null}
+                    keyTakeaway={
+                      weakTopicInsight?.weakTopics[0]?.suggestedAction ?? null
+                    }
                     confidence={weakTopicInsight?.confidence ?? null}
                     priority={weakTopicInsight?.weakTopics[0]?.priority ?? null}
                   />
@@ -309,16 +347,20 @@ function AICoachPage() {
                 <div className="px-6 py-5">
                   {mistakes.length === 0 ? (
                     <p className="text-[13px] text-tertiary">
-                      No mistakes logged yet — log mistakes to surface recurring patterns.
+                      No mistakes logged yet — log mistakes to surface recurring
+                      patterns.
                     </p>
                   ) : (
                     <>
                       {/* Placeholder before first generation */}
-                      {!isLoadingMistakePattern && !mistakePatternError && !mistakePatternInsight && (
-                        <p className="text-[13px] text-tertiary">
-                          Finds recurring error themes across your logged mistakes and suggests targeted fixes.
-                        </p>
-                      )}
+                      {!isLoadingMistakePattern &&
+                        !mistakePatternError &&
+                        !mistakePatternInsight && (
+                          <p className="text-[13px] text-tertiary">
+                            Finds recurring error themes across your logged
+                            mistakes and suggests targeted fixes.
+                          </p>
+                        )}
 
                       <AIInsightCard
                         insightType="mistake_pattern_analysis"
@@ -335,14 +377,21 @@ function AICoachPage() {
                           {
                             label: "Frequency",
                             value: String(mistakeFrequency[0]?.count ?? "—"),
-                            delta: mistakeFrequency[0]?.count > 3 ? "↑ high" : "— moderate",
-                            deltaColor: mistakeFrequency[0]?.count > 3 ? "red" : "amber",
+                            delta:
+                              mistakeFrequency[0]?.count > 3
+                                ? "↑ high"
+                                : "— moderate",
+                            deltaColor:
+                              mistakeFrequency[0]?.count > 3 ? "red" : "amber",
                           },
                         ]}
                         insight={mistakePatternInsight?.topPattern ?? null}
                         isLoading={isLoadingMistakePattern}
                         error={mistakePatternError}
-                        keyTakeaway={mistakePatternInsight?.patterns[0]?.suggestedFix ?? null}
+                        keyTakeaway={
+                          mistakePatternInsight?.patterns[0]?.suggestedFix ??
+                          null
+                        }
                         confidence={mistakePatternInsight?.confidence ?? null}
                       />
                     </>
@@ -358,7 +407,9 @@ function AICoachPage() {
                   </h2>
                   <SecondaryButton
                     onClick={handleRecommendations}
-                    disabled={isLoadingRecommendations || weakTopics.length === 0}
+                    disabled={
+                      isLoadingRecommendations || weakTopics.length === 0
+                    }
                     isLoading={isLoadingRecommendations}
                     label="Generate →"
                     loadingLabel="Generating…"
@@ -367,11 +418,14 @@ function AICoachPage() {
 
                 <div className="px-6 py-5">
                   {/* Placeholder before first generation */}
-                  {!isLoadingRecommendations && !recommendationError && !recommendationInsight && (
-                    <p className="text-[13px] text-tertiary">
-                      Builds a prioritised study plan from your weak topics and mistake patterns.
-                    </p>
-                  )}
+                  {!isLoadingRecommendations &&
+                    !recommendationError &&
+                    !recommendationInsight && (
+                      <p className="text-[13px] text-tertiary">
+                        Builds a prioritised study plan from your weak topics
+                        and mistake patterns.
+                      </p>
+                    )}
 
                   <AIInsightCard
                     insightType="recommendations"
@@ -393,17 +447,20 @@ function AICoachPage() {
                     insight={recommendationInsight?.summary ?? null}
                     isLoading={isLoadingRecommendations}
                     error={recommendationError}
-                    keyTakeaway={recommendationInsight?.recommendations[0]?.action ?? null}
-                    priority={recommendationInsight?.recommendations[0]?.priority ?? null}
+                    keyTakeaway={
+                      recommendationInsight?.recommendations[0]?.action ?? null
+                    }
+                    priority={
+                      recommendationInsight?.recommendations[0]?.priority ??
+                      null
+                    }
                   />
                 </div>
               </div>
-
             </div>
           )}
         </div>
       </main>
-
     </div>
   );
 }
