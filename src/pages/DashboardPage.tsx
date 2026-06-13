@@ -1,260 +1,269 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import {
-  LayoutDashboard, BookOpen, AlertTriangle, Sparkles, BarChart3,
-  Lightbulb, ThumbsUp, ThumbsDown, BarChart2, Calendar, Activity,
-  ChevronRight,
+  AlertTriangle,
+  Activity,
+  TrendingDown,
+  TrendingUp,
+  Minus,
+  Lightbulb,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
+import type { ElementType } from "react";
+import { AppShell } from "../components/AppShell";
+import { Button } from "../components/Button";
+import { getSessions, getMistakes } from "../services/storage";
+import { getRankedWeakTopics, getMistakeFrequencyByTopic } from "../analytics/computeAnalytics";
+import { buildDashboardInsightPrompt } from "../prompts/dashboardInsight";
+import { callOpenAI } from "../services/openai";
+import type { DashboardInsightResponse } from "../types/aiResponses";
+
+type StatItem = { label: string; value: string; delta: string; pos: boolean | null };
+type TopicRow = { topic: string; acc: number; trend: number; mistakes: number; lastStudied: string };
+type EvidenceItem = { icon: ElementType; label: string; value: string; sub: string; cls: string };
+
+const STATS: StatItem[] = [
+  { label: "Avg accuracy", value: "68%", delta: "+4% vs last week", pos: true },
+  { label: "Questions attempted", value: "612", delta: "+96 this week", pos: true },
+  { label: "Mistakes logged", value: "47", delta: "12 unreviewed", pos: null },
+  { label: "Study sessions", value: "24", delta: "last 30 days", pos: null },
+];
+
+const TOPICS: TopicRow[] = [
+  { topic: "Cardiology", acc: 52, trend: -9, mistakes: 12, lastStudied: "2d ago" },
+  { topic: "Pharmacology", acc: 58, trend: 0, mistakes: 9, lastStudied: "1d ago" },
+  { topic: "Neurology", acc: 61, trend: 5, mistakes: 7, lastStudied: "3d ago" },
+  { topic: "Endocrinology", acc: 64, trend: -3, mistakes: 8, lastStudied: "4d ago" },
+  { topic: "Respiratory Medicine", acc: 71, trend: 6, mistakes: 4, lastStudied: "5d ago" },
+];
+
+const EVIDENCE: EvidenceItem[] = [
+  { icon: Activity,       label: "Accuracy",    value: "52%", sub: "↓ 9% last 7 sessions", cls: "text-danger" },
+  { icon: AlertTriangle,  label: "Mistakes",    value: "12",  sub: "↑ 4 last 7 sessions",  cls: "text-warning" },
+  { icon: Activity,       label: "Sessions",    value: "6",   sub: "Last 14 days",          cls: "text-tertiary" },
+  { icon: Activity,       label: "Top pattern", value: "ECG", sub: "SVT vs AFib",           cls: "text-tertiary" },
+];
+
+function AccBar({ acc }: { acc: number }) {
+  const fill = acc < 60 ? "bg-danger" : acc < 70 ? "bg-warning" : "bg-success";
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="relative h-1 w-16 overflow-hidden rounded-full bg-gray-200">
+        <div
+          className={`absolute inset-y-0 left-0 rounded-full ${fill}`}
+          style={{ width: `${acc}%` }}
+        />
+      </div>
+      <span className="tabular-nums text-[13px] text-gray-900">{acc}%</span>
+    </div>
+  );
+}
+
+function TrendCell({ trend }: { trend: number }) {
+  if (trend < 0)
+    return (
+      <span className="flex items-center gap-1 tabular-nums text-[13px] text-danger">
+        <TrendingDown className="h-3.5 w-3.5 shrink-0" />
+        {trend}%
+      </span>
+    );
+  if (trend > 0)
+    return (
+      <span className="flex items-center gap-1 tabular-nums text-[13px] text-success">
+        <TrendingUp className="h-3.5 w-3.5 shrink-0" />
+        +{trend}%
+      </span>
+    );
+  return (
+    <span className="flex items-center gap-1 tabular-nums text-[13px] text-tertiary">
+      <Minus className="h-3.5 w-3.5 shrink-0" />
+      0%
+    </span>
+  );
+}
 
 function DashboardPage() {
+  const [insight, setInsight] = useState<DashboardInsightResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleGenerateInsight = async () => {
+    const sessions = getSessions();
+    const mistakes = getMistakes();
+    const weakTopics = getRankedWeakTopics(sessions);
+    if (weakTopics.length === 0) return;
+    const mistakeFreq = getMistakeFrequencyByTopic(mistakes);
+    const userPrompt = buildDashboardInsightPrompt(weakTopics, mistakeFreq);
+    const systemPrompt = "You are an AI study coach for AMC MCQ Part 1 exam preparation.";
+    setLoading(true);
+    setError(false);
+    const result = await callOpenAI<DashboardInsightResponse>(systemPrompt, userPrompt);
+    if (result) {
+      setInsight(result);
+    } else {
+      setError(true);
+    }
+    setLoading(false);
+  };
+
+  const trendCls = (trend: DashboardInsightResponse["evidence"]["trend"]) =>
+    trend === "declining" ? "text-danger"
+    : trend === "improving" ? "text-success"
+    : "text-tertiary";
+
   return (
-    <div className="fixed inset-0 z-50 flex overflow-hidden bg-zinc-50">
+    <AppShell>
+      <div className="mx-auto w-4/5 px-6 py-8">
 
-      {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      <aside className="flex h-full w-60 shrink-0 flex-col border-r border-black/[0.07] bg-white">
-
-        {/* Logo */}
-        <div className="flex items-center gap-2.5 px-5 py-5">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-indigo-600 text-xs font-bold text-white">
-            A
+        {/* Header */}
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-[30px] font-bold tracking-tight text-gray-900">Dashboard</h1>
+            <p className="mt-1.5 text-[15px] text-secondary">24 sessions · last activity 2 days ago</p>
           </div>
-          <span className="text-sm font-semibold text-zinc-900">AMC Coach</span>
+          <Button
+            type="button"
+            className="mt-1"
+            onClick={handleGenerateInsight}
+            disabled={loading}
+          >
+            {loading ? "Generating…" : "Generate insight"}
+          </Button>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 space-y-0.5 px-3 pt-1">
-
-          {/* Dashboard — active */}
-          <Link to="/" className="flex w-full items-center gap-3 rounded-lg bg-indigo-50 px-3 py-2 text-left text-sm font-medium text-indigo-600 transition-all duration-150">
-            <LayoutDashboard className="h-4 w-4 shrink-0" />
-            Dashboard
-          </Link>
-
-          {/* Study Sessions */}
-          <Link to="/study-sessions" className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-zinc-500 transition-all duration-150 hover:text-zinc-900">
-            <BookOpen className="h-4 w-4 shrink-0" />
-            Study Sessions
-          </Link>
-
-          {/* Mistakes */}
-          <Link to="/mistakes" className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-zinc-500 transition-all duration-150 hover:text-zinc-900">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
-            Mistakes
-          </Link>
-
-          {/* AI Coach */}
-          <Link to="/ai-coach" className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-zinc-500 transition-all duration-150 hover:text-zinc-900">
-            <Sparkles className="h-4 w-4 shrink-0" />
-            AI Coach
-          </Link>
-
-          {/* Progress — no route yet, renders as a disabled-looking link */}
-          <span className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 cursor-not-allowed select-none">
-            <BarChart3 className="h-4 w-4 shrink-0" />
-            Progress
-          </span>
-        </nav>
-
-        {/* Bottom: user identity */}
-        <div className="mt-auto border-t border-black/[0.07] px-5 py-4">
-          <p className="text-sm font-semibold text-zinc-900">Dr. Priya</p>
-          <p className="mt-0.5 text-xs text-zinc-500">AMC MCQ Part 1</p>
-        </div>
-      </aside>
-
-      {/* ── Main content ─────────────────────────────────────────────────── */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-[1100px] px-9 py-9">
-
-          {/* Page header */}
-          <div className="mb-6 flex items-start justify-between">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight text-zinc-900">Dashboard</h1>
-              <p className="mt-0.5 text-sm text-zinc-500">24 sessions · last activity 2 days ago</p>
+        {/* Stats */}
+        <div className="mb-6 grid grid-cols-4 gap-4">
+          {STATS.map(({ label, value, delta, pos }) => (
+            <div key={label} className="rounded-xl border border-black/10 bg-white p-5">
+              <p className="mb-2 text-[13px] text-secondary">{label}</p>
+              <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">{value}</p>
+              <p
+                className={`mt-2 tabular-nums text-[13px] ${
+                  pos === true ? "text-success" : pos === false ? "text-danger" : "text-tertiary"
+                }`}
+              >
+                {delta}
+              </p>
             </div>
-            <button className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-indigo-700">
-              Generate insight
-            </button>
+          ))}
+        </div>
+
+        {/* AI Coaching Brief — error state */}
+        {error && (
+          <div className="mb-6 rounded-xl border border-black/10 bg-white p-6">
+            <p className="text-[14px] text-secondary">
+              AI insights temporarily unavailable. Your data is safe.
+            </p>
           </div>
+        )}
 
-          {/* ── Section 1: AI Insight card ───────────────────────────────── */}
-          <div className="mb-6 rounded-xl border border-black/[0.07] bg-white p-6 transition-all duration-150 hover:border-black/[0.12]">
-            <div className="grid grid-cols-2 gap-8">
+        {/* AI Coaching Brief — insight state */}
+        {insight && !error && (
+          <div className="mb-6 rounded-xl border border-black/10 bg-white">
+            <div className="grid grid-cols-[1fr_308px]">
 
-              {/* Left: insight text */}
-              <div className="flex flex-col">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-indigo-600">
-                  AI INSIGHT
-                </p>
-                <h2 className="mb-2 text-lg font-semibold text-zinc-900">
-                  Cardiology is your highest-priority gap
+              {/* Left: insight + action */}
+              <div className="border-r border-black/5 p-6">
+                <h2 className="mb-3 text-[20px] font-semibold leading-snug text-balance text-gray-900">
+                  {insight.headline}
                 </h2>
-                <p className="mb-4 text-sm leading-relaxed text-zinc-500">
-                  Based on your last 14 days of study, Cardiology shows the steepest performance gap. Your accuracy sits at 52%, which is 16 percentage points below your overall average. We recommend prioritising ECG interpretation and arrhythmia classification this week.
+                <p className="mb-5 max-w-[54ch] text-[15px] leading-relaxed text-secondary">
+                  {insight.detail}
                 </p>
 
-                {/* Key Takeaway */}
-                <div className="mb-4 rounded-lg bg-zinc-50 p-4">
-                  <div className="mb-1.5 flex items-center gap-2">
-                    <Lightbulb className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
-                    <span className="text-xs font-semibold text-zinc-700">Key Takeaway</span>
+                <div className="mb-6 rounded-xl bg-accent-soft p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 shrink-0 text-accent" />
+                    <span className="text-[13px] font-semibold text-accent">Recommended action</span>
                   </div>
-                  <p className="text-sm text-zinc-600">
-                    Focus on SVT vs AFib differentiation in your next 3 practice sets.
+                  <p className="text-[14px] leading-relaxed text-gray-800">
+                    {insight.actionLabel}
                   </p>
                 </div>
 
-                {/* Feedback */}
-                <div className="mt-auto flex items-center gap-3">
-                  <span className="text-xs text-zinc-400">Was this insight helpful?</span>
-                  <button className="rounded p-1.5 text-zinc-400 transition-all duration-150 hover:bg-zinc-100 hover:text-zinc-600">
+                <div className="flex items-center gap-3">
+                  <span className="text-[13px] text-tertiary">Useful?</span>
+                  <button
+                    type="button"
+                    aria-label="Helpful"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-secondary transition-all duration-150 hover:bg-gray-200"
+                  >
                     <ThumbsUp className="h-4 w-4" />
                   </button>
-                  <button className="rounded p-1.5 text-zinc-400 transition-all duration-150 hover:bg-zinc-100 hover:text-zinc-600">
+                  <button
+                    type="button"
+                    aria-label="Not helpful"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-secondary transition-all duration-150 hover:bg-gray-200"
+                  >
                     <ThumbsDown className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Right: evidence cards */}
-              <div className="flex flex-col">
-                <div className="mb-4 flex items-center gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400">EVIDENCE</span>
-                  <span className="text-xs text-zinc-400">(computed from your data)</span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-
-                  {/* Card: 52% accuracy */}
-                  <div className="rounded-xl border border-black/[0.07] bg-zinc-50 p-4 transition-all duration-150 hover:border-black/[0.12]">
-                    <BarChart2 className="mb-2 h-4 w-4 text-zinc-400" />
-                    <p className="font-mono text-2xl font-medium tabular-nums text-zinc-900">52%</p>
-                    <p className="mt-0.5 text-xs text-zinc-500">Accuracy in Cardiology</p>
-                    <p className="mt-0.5 font-mono text-xs tabular-nums text-red-500">↓ 9% vs last 7 sessions</p>
+              {/* Right: Evidence */}
+              <div className="p-6">
+                <p className="mb-4 text-[13px] font-medium text-secondary">Evidence</p>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+                  <div>
+                    <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
+                      {insight.evidence.accuracy}%
+                    </p>
+                    <p className="mt-2 text-[13px] text-secondary">Accuracy</p>
+                    <p className={`mt-1 text-[12px] capitalize ${trendCls(insight.evidence.trend)}`}>
+                      {insight.evidence.trend}
+                    </p>
                   </div>
-
-                  {/* Card: 12 mistakes */}
-                  <div className="rounded-xl border border-black/[0.07] bg-zinc-50 p-4 transition-all duration-150 hover:border-black/[0.12]">
-                    <AlertTriangle className="mb-2 h-4 w-4 text-zinc-400" />
-                    <p className="font-mono text-2xl font-medium tabular-nums text-zinc-900">12</p>
-                    <p className="mt-0.5 text-xs text-zinc-500">Mistakes Logged</p>
-                    <p className="mt-0.5 font-mono text-xs tabular-nums text-amber-500">↑ 4 vs last 7 sessions</p>
-                  </div>
-
-                  {/* Card: 6 sessions */}
-                  <div className="rounded-xl border border-black/[0.07] bg-zinc-50 p-4 transition-all duration-150 hover:border-black/[0.12]">
-                    <Calendar className="mb-2 h-4 w-4 text-zinc-400" />
-                    <p className="font-mono text-2xl font-medium tabular-nums text-zinc-900">6</p>
-                    <p className="mt-0.5 text-xs text-zinc-500">Sessions Analysed</p>
-                    <p className="mt-0.5 font-mono text-xs tabular-nums text-zinc-400">Last 14 days</p>
-                  </div>
-
-                  {/* Card: ECG error pattern */}
-                  <div className="rounded-xl border border-black/[0.07] bg-zinc-50 p-4 transition-all duration-150 hover:border-black/[0.12]">
-                    <Activity className="mb-2 h-4 w-4 text-zinc-400" />
-                    <p className="font-mono text-2xl font-medium tabular-nums text-zinc-900">ECG</p>
-                    <p className="mt-0.5 text-xs text-zinc-500">Top Error Pattern</p>
-                    <p className="mt-0.5 font-mono text-xs tabular-nums text-zinc-400">SVT vs AFib</p>
+                  <div>
+                    <p className="text-[18px] font-bold leading-tight text-gray-900 line-clamp-2">
+                      {insight.evidence.topic}
+                    </p>
+                    <p className="mt-2 text-[13px] text-secondary">Priority topic</p>
                   </div>
                 </div>
-
-                <p className="mt-3 text-right font-mono text-xs text-zinc-400">Confidence: High</p>
+                <p className="mt-6 text-right text-[12px] capitalize text-tertiary">
+                  Urgency: {insight.urgency}
+                </p>
               </div>
             </div>
           </div>
+        )}
 
-          {/* ── Section 2: Stats + Weak Topics ──────────────────────────── */}
-          <div className="grid grid-cols-2 gap-4">
+        {/* Topic Performance */}
+        <div className="overflow-hidden rounded-xl border border-black/10 bg-white">
+          <div className="flex items-center justify-between border-b border-black/10 px-6 py-4">
+            <h2 className="text-[17px] font-semibold text-gray-900">Topic Performance</h2>
+            <span className="text-[13px] text-secondary">5 topics · sorted by accuracy</span>
+          </div>
 
-            {/* Left: 2×2 stat boxes */}
-            <div className="grid grid-cols-2 gap-4">
-
-              {/* Average Accuracy */}
-              <div className="rounded-xl border border-black/[0.07] bg-white p-5 transition-all duration-150 hover:border-black/[0.12]">
-                <p className="mb-2 text-xs text-zinc-500">Average Accuracy</p>
-                <p className="font-mono text-2xl font-medium tabular-nums text-zinc-900">68%</p>
-                <p className="mt-1 font-mono text-xs tabular-nums text-green-600">+4% vs last week</p>
-              </div>
-
-              {/* Questions Attempted */}
-              <div className="rounded-xl border border-black/[0.07] bg-white p-5 transition-all duration-150 hover:border-black/[0.12]">
-                <p className="mb-2 text-xs text-zinc-500">Questions Attempted</p>
-                <p className="font-mono text-2xl font-medium tabular-nums text-zinc-900">612</p>
-                <p className="mt-1 font-mono text-xs tabular-nums text-green-600">+96 this week</p>
-              </div>
-
-              {/* Mistakes Logged */}
-              <div className="rounded-xl border border-black/[0.07] bg-white p-5 transition-all duration-150 hover:border-black/[0.12]">
-                <p className="mb-2 text-xs text-zinc-500">Mistakes Logged</p>
-                <p className="font-mono text-2xl font-medium tabular-nums text-zinc-900">47</p>
-                <p className="mt-1 font-mono text-xs tabular-nums text-zinc-400">12 unreviewed</p>
-              </div>
-
-              {/* Weakest Topic — Inter, not mono, for the value */}
-              <div className="rounded-xl border border-black/[0.07] bg-white p-5 transition-all duration-150 hover:border-black/[0.12]">
-                <p className="mb-2 text-xs text-zinc-500">Weakest Topic</p>
-                <p className="text-2xl font-medium text-zinc-900">Cardiology</p>
-                <p className="mt-1 font-mono text-xs tabular-nums text-red-500">52% · declining</p>
-              </div>
-            </div>
-
-            {/* Right: Weak Topics table */}
-            <div className="overflow-hidden rounded-xl border border-black/[0.07] bg-white">
-
-              {/* Header */}
-              <div className="grid grid-cols-[1fr_148px_72px_64px_20px] border-b border-black/[0.07] px-5 py-3">
-                <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">Topic</span>
-                <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">Accuracy</span>
-                <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">Trend</span>
-                <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">Mistakes</span>
-                <span />
-              </div>
-
-              {/* Rows */}
-              {(
-                [
-                  { topic: "Cardiology",          acc: 52, trend: "↓ 9%", trendCls: "text-red-500",   mistakes: 12, barCls: "bg-red-400"   },
-                  { topic: "Pharmacology",         acc: 58, trend: "— 0%", trendCls: "text-zinc-400",  mistakes: 9,  barCls: "bg-red-400"   },
-                  { topic: "Neurology",            acc: 61, trend: "↑ 5%", trendCls: "text-green-600", mistakes: 7,  barCls: "bg-amber-400" },
-                  { topic: "Endocrinology",        acc: 64, trend: "↓ 3%", trendCls: "text-red-500",   mistakes: 8,  barCls: "bg-amber-400" },
-                  { topic: "Respiratory Medicine", acc: 71, trend: "↑ 6%", trendCls: "text-green-600", mistakes: 4,  barCls: "bg-green-500" },
-                ] as const
-              ).map((row) => (
-                <div
-                  key={row.topic}
-                  className="grid grid-cols-[1fr_148px_72px_64px_20px] cursor-pointer items-center border-b border-black/[0.07] px-5 py-3.5 last:border-0 transition-all duration-150 hover:bg-zinc-50"
-                >
-                  <span className="text-sm font-medium text-zinc-900">{row.topic}</span>
-
-                  {/* Accuracy: bar track + percentage */}
-                  <div className="flex items-center gap-2">
-                    <div className="h-1 w-16 shrink-0 overflow-hidden rounded-full bg-zinc-100">
-                      <div
-                        className={`h-full rounded-full ${row.barCls} ${
-                          row.acc === 52 ? "w-[52%]"
-                          : row.acc === 58 ? "w-[58%]"
-                          : row.acc === 61 ? "w-[61%]"
-                          : row.acc === 64 ? "w-[64%]"
-                          : "w-[71%]"
-                        }`}
-                      />
-                    </div>
-                    <span className="font-mono text-sm tabular-nums text-zinc-900">{row.acc}%</span>
-                  </div>
-
-                  <span className={`font-mono text-xs tabular-nums ${row.trendCls}`}>{row.trend}</span>
-                  <span className="font-mono text-sm tabular-nums text-zinc-900">{row.mistakes}</span>
-
-                  {/* Chevron */}
-                  <ChevronRight className="h-4 w-4 text-zinc-300" />
-                </div>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-black/5">
+                {(["Topic", "Accuracy", "Trend", "Mistakes", "Last studied"] as const).map((h) => (
+                  <th
+                    key={h}
+                    className="px-6 py-3 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-secondary"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              {TOPICS.map((row) => (
+                <tr key={row.topic}>
+                  <td className="px-6 py-3.5 text-[14px] font-medium text-gray-900">{row.topic}</td>
+                  <td className="px-6 py-3.5"><AccBar acc={row.acc} /></td>
+                  <td className="px-6 py-3.5"><TrendCell trend={row.trend} /></td>
+                  <td className="px-6 py-3.5 tabular-nums text-[14px] text-gray-900">{row.mistakes}</td>
+                  <td className="px-6 py-3.5 text-[13px] text-secondary">{row.lastStudied}</td>
+                </tr>
               ))}
-            </div>
-          </div>
-
+            </tbody>
+          </table>
         </div>
-      </main>
 
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
