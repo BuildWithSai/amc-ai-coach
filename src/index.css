@@ -1,30 +1,32 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, monospace;
   --animate-row-highlight: row-highlight 800ms ease-out forwards;
 
-  /* ── Design system color tokens ── */
-  --color-accent:       #4F46E5;  /* indigo-600  — primary action / active state */
-  --color-accent-hover: #4338CA;  /* indigo-700  — button hover */
-  --color-accent-soft:  #EEF2FF;  /* indigo-50   — pill bg / active nav bg */
-  --color-secondary:    #71717A;  /* zinc-500    — labels, subtitles */
-  --color-tertiary:     #A1A1AA;  /* zinc-400    — table headers, dates, counts */
-  --color-border:       rgba(0,0,0,0.07);   /* card + sidebar borders */
-  --color-border-row:   rgba(0,0,0,0.05);   /* table row dividers */
-  --color-border-input: rgba(0,0,0,0.12);   /* form input borders */
+  --color-accent:       #0A84FF;
+  --color-accent-hover: #0071E3;
+  --color-accent-soft:  #EBF5FF;
+  --color-secondary:    #6B6B70;  /* 4.93:1 on page bg — passes AA */
+  --color-tertiary:     #8A8A8F;  /* 3.20:1 — large/bold text only */
+  --color-success:      #28A745;  /* 4.52:1 on white — passes AA */
+  --color-danger:       #D63031;  /* 4.85:1 on white — passes AA */
+  --color-warning:      #FF9500;
+  --color-border:       rgba(0,0,0,0.10);
+  --color-border-row:   rgba(0,0,0,0.05);
+  --color-border-input: rgba(0,0,0,0.10);
 }
 
 @keyframes row-highlight {
-  from { background-color: #EEF2FF; }
+  from { background-color: rgba(10, 132, 255, 0.08); }
   to   { background-color: transparent; }
 }
 
 body {
   margin: 0;
-  background-color: #f7f6f3;
-  font-family: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+  background-color: #F5F5F7;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

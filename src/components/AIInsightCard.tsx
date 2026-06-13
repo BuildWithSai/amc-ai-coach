@@ -5,9 +5,9 @@ import { saveAIFeedback } from '../services/aiFeedback'
 interface Evidence {
   label: string
   value: string
-  mono?: boolean                           // default true — set false for text values
-  delta?: string                           // e.g. "↓ declining", "↑ improving"
-  deltaColor?: 'red' | 'amber' | 'green'  // drives threshold colour
+  mono?: boolean
+  delta?: string
+  deltaColor?: 'red' | 'amber' | 'green'
 }
 
 interface AIInsightCardProps {
@@ -37,7 +37,6 @@ function AIInsightCard({
 
   const handleFeedback = (rating: 'helpful' | 'not_helpful') => {
     setFeedback(rating)
-    // Save feedback to localStorage so we can track prompt quality over time
     saveAIFeedback({
       insightType,
       timestamp: new Date().toISOString(),
@@ -45,130 +44,124 @@ function AIInsightCard({
     })
   }
 
-  // Nothing to render until the user has triggered generation
   if (!isLoading && !error && !insight) return null
 
   const deltaColorCls = (c?: 'red' | 'amber' | 'green') =>
-    c === 'red'   ? 'text-red-500'
-    : c === 'amber' ? 'text-amber-500'
-    : c === 'green' ? 'text-green-600'
+    c === 'red'   ? 'text-danger'
+    : c === 'amber' ? 'text-warning'
+    : c === 'green' ? 'text-success'
     : 'text-tertiary'
 
   return (
     <div className="mt-4">
 
-      {/* ── Evidence mini-stat cards ───────────────────────────────── */}
+      {/* Evidence panel — rounded-lg (panel, not nested card) */}
       {evidence.length > 0 && (
-        <div className="mb-5 flex flex-wrap gap-3">
-          {evidence.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-[8px] border border-black/[0.07] bg-zinc-50 px-4 py-3"
-            >
-              <p className={`text-[16px] font-medium leading-none text-zinc-900 ${item.mono !== false ? 'font-mono tabular-nums' : ''}`}>
-                {item.value}
-              </p>
-              <p className="mt-1 text-[11px] text-tertiary">{item.label}</p>
-              {item.delta && (
-                <p className={`mt-0.5 font-mono text-[11px] tabular-nums ${deltaColorCls(item.deltaColor)}`}>
-                  {item.delta}
+        <div className="mb-5 rounded-lg bg-gray-50 p-4">
+          <div className="flex flex-wrap gap-x-8 gap-y-4">
+            {evidence.map((item) => (
+              <div key={item.label} className="min-w-[72px]">
+                <p className={`text-[18px] font-bold leading-none text-gray-900 ${item.mono !== false ? 'tabular-nums' : ''}`}>
+                  {item.value}
                 </p>
-              )}
-            </div>
-          ))}
+                <p className="mt-1 text-[12px] text-secondary">{item.label}</p>
+                {item.delta && (
+                  <p className={`mt-0.5 tabular-nums text-[11px] ${deltaColorCls(item.deltaColor)}`}>
+                    {item.delta}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* ── Loading skeleton ───────────────────────────────────────── */}
+      {/* Loading skeleton */}
       {isLoading && (
-        <div className="animate-pulse space-y-2.5">
-          <div className="h-[13px] w-3/5 rounded-full bg-zinc-200" />
-          <div className="h-2.5 w-full rounded-full bg-zinc-100" />
-          <div className="h-2.5 w-[88%] rounded-full bg-zinc-100" />
-          <div className="h-2.5 w-[74%] rounded-full bg-zinc-100" />
-          <div className="h-2.5 w-[82%] rounded-full bg-zinc-100" />
+        <div className="animate-pulse space-y-3">
+          <div className="h-3.5 w-3/5 rounded-lg bg-gray-200" />
+          <div className="h-3 w-full rounded-lg bg-gray-200/80" />
+          <div className="h-3 w-[88%] rounded-lg bg-gray-200/80" />
+          <div className="h-3 w-[74%] rounded-lg bg-gray-200/80" />
+          <div className="h-3 w-[82%] rounded-lg bg-gray-200/80" />
         </div>
       )}
 
-      {/* ── Error state ────────────────────────────────────────────── */}
+      {/* Error state */}
       {error && !isLoading && (
-        <div className="rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3">
-          <p className="text-[13px] text-amber-700">
+        <div className="rounded-lg bg-gray-50 px-4 py-3">
+          <p className="text-[14px] text-secondary">
             AI insights temporarily unavailable. Your data is safe.
           </p>
         </div>
       )}
 
-      {/* ── Insight content ────────────────────────────────────────── */}
+      {/* Insight content */}
       {!isLoading && !error && insight && (
         <div>
           {headline && (
-            <h3 className="mb-2 text-[14.5px] font-semibold leading-snug text-zinc-900">
+            <h3 className="mb-2 text-[15px] font-semibold leading-snug text-gray-900">
               {headline}
             </h3>
           )}
 
-          <p className="max-w-[640px] text-[13px] leading-[1.65] text-secondary">
+          <p className="max-w-[640px] text-[14px] leading-relaxed text-secondary">
             {insight}
           </p>
 
-          {/* Key takeaway block */}
+          {/* Key takeaway — rounded-lg (panel, not nested card) */}
           {keyTakeaway && (
-            <div className="mt-4 rounded-[8px] border-l-2 border-accent bg-accent-soft px-4 py-3">
-              <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-accent">
+            <div className="mt-4 rounded-lg bg-accent-soft px-4 py-3">
+              <p className="mb-1.5 text-[12px] font-semibold text-accent">
                 Key takeaway
               </p>
-              <p className="text-[13px] leading-relaxed text-zinc-800">
+              <p className="text-[14px] leading-relaxed text-gray-800">
                 {keyTakeaway}
               </p>
             </div>
           )}
 
-          {/* Footer: meta left, feedback buttons right */}
-          <div className="mt-4 flex items-center justify-between border-t border-black/[0.07] pt-3">
+          <div className="mt-4 flex items-center justify-between border-t border-black/5 pt-4">
             <div className="flex items-center gap-4">
               {confidence && (
-                <span className="font-mono text-[12px] tabular-nums text-tertiary">
+                <span className="tabular-nums text-[13px] text-tertiary">
                   Confidence: {confidence}
                 </span>
               )}
               {priority && (
-                <span className="font-mono text-[12px] tabular-nums text-tertiary">
+                <span className="tabular-nums text-[13px] text-tertiary">
                   Priority: {priority}
                 </span>
               )}
               {!confidence && !priority && (
-                <span className="font-mono text-[12px] text-tertiary">
-                  Was this helpful?
-                </span>
+                <span className="text-[13px] text-tertiary">Was this helpful?</span>
               )}
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Thumbs up */}
               <button
+                type="button"
                 onClick={() => handleFeedback('helpful')}
                 title="Helpful"
-                className={`flex h-[30px] w-[30px] items-center justify-center rounded-[6px] border transition-all duration-150 ${
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] ${
                   feedback === 'helpful'
-                    ? 'border-accent bg-accent-soft text-accent'
-                    : 'border-black/[0.12] bg-white text-tertiary hover:border-black/[0.2] hover:text-zinc-700'
+                    ? 'bg-accent-soft text-accent'
+                    : 'bg-gray-100 text-secondary hover:bg-gray-200'
                 }`}
               >
-                <ThumbsUp className="h-3.5 w-3.5" />
+                <ThumbsUp className="h-4 w-4" />
               </button>
-
-              {/* Thumbs down */}
               <button
+                type="button"
                 onClick={() => handleFeedback('not_helpful')}
                 title="Not helpful"
-                className={`flex h-[30px] w-[30px] items-center justify-center rounded-[6px] border transition-all duration-150 ${
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] ${
                   feedback === 'not_helpful'
-                    ? 'border-red-300 bg-red-50 text-red-500'
-                    : 'border-black/[0.12] bg-white text-tertiary hover:border-black/[0.2] hover:text-zinc-700'
+                    ? 'bg-red-50 text-danger'
+                    : 'bg-gray-100 text-secondary hover:bg-gray-200'
                 }`}
               >
-                <ThumbsDown className="h-3.5 w-3.5" />
+                <ThumbsDown className="h-4 w-4" />
               </button>
             </div>
           </div>
