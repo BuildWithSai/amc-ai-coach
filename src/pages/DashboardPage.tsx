@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   AlertTriangle,
   Activity,
@@ -11,6 +12,11 @@ import {
 import type { ElementType } from "react";
 import { AppShell } from "../components/AppShell";
 import { Button } from "../components/Button";
+import { getSessions, getMistakes } from "../services/storage";
+import { getRankedWeakTopics, getMistakeFrequencyByTopic } from "../analytics/computeAnalytics";
+import { buildDashboardInsightPrompt } from "../prompts/dashboardInsight";
+import { callOpenAI } from "../services/openai";
+import type { DashboardInsightResponse } from "../types/aiResponses";
 
 type StatItem = { label: string; value: string; delta: string; pos: boolean | null };
 type TopicRow = { topic: string; acc: number; trend: number; mistakes: number; lastStudied: string };
@@ -77,6 +83,34 @@ function TrendCell({ trend }: { trend: number }) {
 }
 
 function DashboardPage() {
+  const [insight, setInsight] = useState<DashboardInsightResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleGenerateInsight = async () => {
+    const sessions = getSessions();
+    const mistakes = getMistakes();
+    const weakTopics = getRankedWeakTopics(sessions);
+    if (weakTopics.length === 0) return;
+    const mistakeFreq = getMistakeFrequencyByTopic(mistakes);
+    const userPrompt = buildDashboardInsightPrompt(weakTopics, mistakeFreq);
+    const systemPrompt = "You are an AI study coach for AMC MCQ Part 1 exam preparation.";
+    setLoading(true);
+    setError(false);
+    const result = await callOpenAI<DashboardInsightResponse>(systemPrompt, userPrompt);
+    if (result) {
+      setInsight(result);
+    } else {
+      setError(true);
+    }
+    setLoading(false);
+  };
+
+  const trendCls = (trend: DashboardInsightResponse["evidence"]["trend"]) =>
+    trend === "declining" ? "text-danger"
+    : trend === "improving" ? "text-success"
+    : "text-tertiary";
+
   return (
     <AppShell>
       <div className="mx-auto w-4/5 px-6 py-8">
@@ -87,7 +121,14 @@ function DashboardPage() {
             <h1 className="text-[30px] font-bold tracking-tight text-gray-900">Dashboard</h1>
             <p className="mt-1.5 text-[15px] text-secondary">24 sessions · last activity 2 days ago</p>
           </div>
-          <Button type="button" className="mt-1">Generate insight</Button>
+          <Button
+            type="button"
+            className="mt-1"
+            onClick={handleGenerateInsight}
+            disabled={loading}
+          >
+            {loading ? "Generating…" : "Generate insight"}
+          </Button>
         </div>
 
         {/* Stats */}
@@ -107,67 +148,85 @@ function DashboardPage() {
           ))}
         </div>
 
-        {/* AI Coaching Brief */}
-        <div className="mb-6 rounded-xl border border-black/10 bg-white">
-          <div className="grid grid-cols-[1fr_308px]">
+        {/* AI Coaching Brief — error state */}
+        {error && (
+          <div className="mb-6 rounded-xl border border-black/10 bg-white p-6">
+            <p className="text-[14px] text-secondary">
+              AI insights temporarily unavailable. Your data is safe.
+            </p>
+          </div>
+        )}
 
-            {/* Left: insight + action */}
-            <div className="border-r border-black/5 p-6">
-              <h2 className="mb-3 text-[20px] font-semibold leading-snug text-balance text-gray-900">
-                Cardiology is your highest-priority gap
-              </h2>
-              <p className="mb-5 max-w-[54ch] text-[15px] leading-relaxed text-secondary">
-                Your accuracy in Cardiology sits at 52% — 16 points below your overall average. The error
-                pattern concentrates in ECG interpretation and arrhythmia classification. Performance has
-                dropped 9% across the last 7 sessions.
-              </p>
+        {/* AI Coaching Brief — insight state */}
+        {insight && !error && (
+          <div className="mb-6 rounded-xl border border-black/10 bg-white">
+            <div className="grid grid-cols-[1fr_308px]">
 
-              <div className="mb-6 rounded-xl bg-accent-soft p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 shrink-0 text-accent" />
-                  <span className="text-[13px] font-semibold text-accent">Recommended action</span>
+              {/* Left: insight + action */}
+              <div className="border-r border-black/5 p-6">
+                <h2 className="mb-3 text-[20px] font-semibold leading-snug text-balance text-gray-900">
+                  {insight.headline}
+                </h2>
+                <p className="mb-5 max-w-[54ch] text-[15px] leading-relaxed text-secondary">
+                  {insight.detail}
+                </p>
+
+                <div className="mb-6 rounded-xl bg-accent-soft p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 shrink-0 text-accent" />
+                    <span className="text-[13px] font-semibold text-accent">Recommended action</span>
+                  </div>
+                  <p className="text-[14px] leading-relaxed text-gray-800">
+                    {insight.actionLabel}
+                  </p>
                 </div>
-                <p className="text-[14px] leading-relaxed text-gray-800">
-                  In your next 3 practice sets, target SVT vs AFib differentiation. Aim for ≥65% before
-                  advancing to rate control management.
+
+                <div className="flex items-center gap-3">
+                  <span className="text-[13px] text-tertiary">Useful?</span>
+                  <button
+                    type="button"
+                    aria-label="Helpful"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-secondary transition-all duration-150 hover:bg-gray-200"
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Not helpful"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-secondary transition-all duration-150 hover:bg-gray-200"
+                  >
+                    <ThumbsDown className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Right: Evidence */}
+              <div className="p-6">
+                <p className="mb-4 text-[13px] font-medium text-secondary">Evidence</p>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+                  <div>
+                    <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
+                      {insight.evidence.accuracy}%
+                    </p>
+                    <p className="mt-2 text-[13px] text-secondary">Accuracy</p>
+                    <p className={`mt-1 text-[12px] capitalize ${trendCls(insight.evidence.trend)}`}>
+                      {insight.evidence.trend}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[18px] font-bold leading-tight text-gray-900 line-clamp-2">
+                      {insight.evidence.topic}
+                    </p>
+                    <p className="mt-2 text-[13px] text-secondary">Priority topic</p>
+                  </div>
+                </div>
+                <p className="mt-6 text-right text-[12px] capitalize text-tertiary">
+                  Urgency: {insight.urgency}
                 </p>
               </div>
-
-              <div className="flex items-center gap-3">
-                <span className="text-[13px] text-tertiary">Useful?</span>
-                <button
-                  type="button"
-                  aria-label="Helpful"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-secondary transition-all duration-150 hover:bg-gray-200"
-                >
-                  <ThumbsUp className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Not helpful"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-secondary transition-all duration-150 hover:bg-gray-200"
-                >
-                  <ThumbsDown className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Right: Evidence */}
-            <div className="p-6">
-              <p className="mb-4 text-[13px] font-medium text-secondary">Evidence</p>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-6">
-                {EVIDENCE.map(({ label, value, sub, cls }) => (
-                  <div key={label}>
-                    <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">{value}</p>
-                    <p className="mt-2 text-[13px] text-secondary">{label}</p>
-                    <p className={`mt-1 tabular-nums text-[12px] ${cls}`}>{sub}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-6 text-right tabular-nums text-[12px] text-tertiary">Confidence: High</p>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Topic Performance */}
         <div className="overflow-hidden rounded-xl border border-black/10 bg-white">
