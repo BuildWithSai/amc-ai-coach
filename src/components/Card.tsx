@@ -5,12 +5,20 @@ interface CardProps {
   className?: string;
   padding?: boolean;
   overflow?: boolean;
+  interactive?: boolean;
 }
 
-export function Card({ children, className = "", padding = false, overflow = false }: CardProps) {
+export function Card({
+  children,
+  className = "",
+  padding = false,
+  overflow = false,
+  interactive = false,
+}: CardProps) {
   return (
     <div
-      className={`rounded-xl border border-black/10 bg-white ${padding ? "p-6" : ""} ${overflow ? "overflow-hidden" : ""} ${className}`}
+      className={`rounded-xl bg-surface ${padding ? "p-6" : ""} ${overflow ? "overflow-hidden" : ""} ${interactive ? "card-interactive" : ""} ${className}`}
+      style={{ boxShadow: "var(--shadow-card)" }}
     >
       {children}
     </div>

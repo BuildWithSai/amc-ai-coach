@@ -57,7 +57,7 @@ function AIInsightCard({
 
       {/* Evidence panel — rounded-lg (panel, not nested card) */}
       {evidence.length > 0 && (
-        <div className="mb-5 rounded-lg bg-gray-50 p-4">
+        <div className="mb-5 rounded-lg bg-surface-alt p-4">
           <div className="flex flex-wrap gap-x-8 gap-y-4">
             {evidence.map((item) => (
               <div key={item.label} className="min-w-[72px]">
@@ -79,17 +79,17 @@ function AIInsightCard({
       {/* Loading skeleton */}
       {isLoading && (
         <div className="animate-pulse space-y-3">
-          <div className="h-3.5 w-3/5 rounded-lg bg-gray-200" />
-          <div className="h-3 w-full rounded-lg bg-gray-200/80" />
-          <div className="h-3 w-[88%] rounded-lg bg-gray-200/80" />
-          <div className="h-3 w-[74%] rounded-lg bg-gray-200/80" />
-          <div className="h-3 w-[82%] rounded-lg bg-gray-200/80" />
+          <div className="h-3.5 w-3/5 rounded-lg bg-muted/60" />
+          <div className="h-3 w-full rounded-lg bg-muted/40" />
+          <div className="h-3 w-[88%] rounded-lg bg-muted/40" />
+          <div className="h-3 w-[74%] rounded-lg bg-muted/40" />
+          <div className="h-3 w-[82%] rounded-lg bg-muted/40" />
         </div>
       )}
 
       {/* Error state */}
       {error && !isLoading && (
-        <div className="rounded-lg bg-gray-50 px-4 py-3">
+        <div className="rounded-lg bg-surface-alt px-4 py-3">
           <p className="text-[14px] text-secondary">
             AI insights temporarily unavailable. Your data is safe.
           </p>
@@ -143,10 +143,10 @@ function AIInsightCard({
                 type="button"
                 onClick={() => handleFeedback('helpful')}
                 title="Helpful"
-                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] ${
+                className={`flex h-8 w-8 items-center justify-center rounded-[10px] transition-all duration-150 ease-out active:scale-[0.98] ${
                   feedback === 'helpful'
                     ? 'bg-accent-soft text-accent'
-                    : 'bg-gray-100 text-secondary hover:bg-gray-200'
+                    : 'bg-surface-alt text-secondary hover:bg-surface-hover'
                 }`}
               >
                 <ThumbsUp className="h-4 w-4" />
@@ -155,10 +155,10 @@ function AIInsightCard({
                 type="button"
                 onClick={() => handleFeedback('not_helpful')}
                 title="Not helpful"
-                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] ${
+                className={`flex h-8 w-8 items-center justify-center rounded-[10px] transition-all duration-150 ease-out active:scale-[0.98] ${
                   feedback === 'not_helpful'
                     ? 'bg-red-50 text-danger'
-                    : 'bg-gray-100 text-secondary hover:bg-gray-200'
+                    : 'bg-surface-alt text-secondary hover:bg-surface-hover'
                 }`}
               >
                 <ThumbsDown className="h-4 w-4" />

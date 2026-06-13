@@ -26,10 +26,10 @@ const AMC_TOPICS: AMCTopic[] = [
 ];
 
 const inputCls =
-  "h-[38px] w-full rounded-lg border border-black/10 bg-white px-3 text-[14px] text-gray-900 transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
+  "h-[38px] w-full rounded-[10px] border border-border-input bg-surface px-3 text-[14px] text-primary transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
 
 const monoInputCls =
-  "h-[38px] w-full rounded-lg border border-black/10 bg-white px-3 tabular-nums text-[14px] text-gray-900 transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
+  "h-[38px] w-full rounded-[10px] border border-border-input bg-surface px-3 tabular-nums text-[14px] text-primary transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
 
 const labelCls = "mb-1.5 block text-[13px] font-medium text-secondary";
 
@@ -136,7 +136,7 @@ function StudySessionsPage() {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Optional notes about this session…"
-                  className="w-full resize-none rounded-lg border border-black/10 bg-white px-3 py-2 text-[14px] text-gray-900 transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                  className="w-full resize-none rounded-[10px] border border-border-input bg-surface px-3 py-2 text-[14px] text-primary transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                 />
               </div>
 
@@ -156,7 +156,7 @@ function StudySessionsPage() {
             ) : (
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-black/10">
+                  <tr className="border-b border-border">
                     {["Topic", "Date", "Attempted", "Correct", "Accuracy"].map((col) => (
                       <th
                         key={col}
@@ -167,7 +167,7 @@ function StudySessionsPage() {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-black/5">
+                <tbody className="divide-y divide-border-row">
                   {sessions.map((session) => {
                     const accuracy = Math.round((session.correct / session.attempted) * 100);
                     const date = new Date(session.createdAt).toLocaleDateString("en-AU", {
@@ -184,7 +184,7 @@ function StudySessionsPage() {
                     return (
                       <tr
                         key={session.id}
-                        className={`transition-colors duration-150 hover:bg-gray-50 ${
+                        className={`transition-colors duration-150 hover:bg-surface-hover ${
                           session.id === highlightId ? "animate-row-highlight" : ""
                         }`}
                       >

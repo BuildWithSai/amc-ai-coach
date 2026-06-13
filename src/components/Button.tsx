@@ -15,15 +15,17 @@ export function Button({
 }: ButtonProps) {
   const sizes = {
     sm: "px-3 py-1.5 text-[13px]",
-    md: "px-4 py-2 text-[14px]",
+    md: "px-4 py-[9px] text-[14px]",
   };
   const variants = {
-    primary: "bg-[#0A84FF] text-white hover:bg-[#0071E3]",
-    secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",
+    primary:
+      "bg-accent text-white shadow-sm hover:bg-accent-hover",
+    secondary:
+      "bg-surface-alt text-secondary hover:bg-surface-hover hover:text-primary",
   };
   return (
     <button
-      className={`rounded-lg font-medium transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${sizes[size]} ${variants[variant]} ${className}`}
+      className={`rounded-[10px] font-medium transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${sizes[size]} ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

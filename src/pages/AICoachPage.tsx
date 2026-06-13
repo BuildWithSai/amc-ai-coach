@@ -100,7 +100,7 @@ function AICoachPage() {
     >
       {isLoading ? (
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-3 animate-spin rounded-full border-[1.5px] border-gray-400 border-t-transparent" />
+          <span className="inline-block h-3 w-3 animate-spin rounded-full border-[1.5px] border-tertiary border-t-transparent" />
           {loadingLabel}
         </span>
       ) : label}
@@ -133,7 +133,7 @@ function AICoachPage() {
 
             {/* Weak Topic Analysis */}
             <Card overflow>
-              <div className="flex items-center justify-between border-b border-black/10 px-6 py-4">
+              <div className="flex items-center justify-between border-b border-border px-6 py-4">
                 <div>
                   <h2 className="text-[17px] font-semibold text-gray-900">Weak Topic Analysis</h2>
                   {weakTopics.length === 1 && (
@@ -175,7 +175,7 @@ function AICoachPage() {
 
             {/* Mistake Patterns */}
             <Card overflow>
-              <div className="flex items-center justify-between border-b border-black/10 px-6 py-4">
+              <div className="flex items-center justify-between border-b border-border px-6 py-4">
                 <h2 className="text-[17px] font-semibold text-gray-900">Mistake Patterns</h2>
                 <GenerateButton
                   onClick={handleMistakePatternAnalysis}
@@ -222,7 +222,7 @@ function AICoachPage() {
 
             {/* Recommendations */}
             <Card overflow>
-              <div className="flex items-center justify-between border-b border-black/10 px-6 py-4">
+              <div className="flex items-center justify-between border-b border-border px-6 py-4">
                 <h2 className="text-[17px] font-semibold text-gray-900">Recommendations</h2>
                 <GenerateButton
                   onClick={handleRecommendations}

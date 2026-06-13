@@ -26,7 +26,7 @@ const AMC_TOPICS: AMCTopic[] = [
 ];
 
 const inputCls =
-  "w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-[14px] text-gray-900 transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
+  "w-full rounded-[10px] border border-border-input bg-surface px-3 py-2 text-[14px] text-primary transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
 
 const labelCls = "mb-1.5 block text-[13px] font-medium text-secondary";
 
@@ -153,7 +153,7 @@ function MistakesPage() {
                     <col className="w-[16%]" />
                   </colgroup>
                   <thead>
-                    <tr className="border-b border-black/10">
+                    <tr className="border-b border-border">
                       {["Topic", "Question summary", "Why wrong", "Correct concept", "Date"].map((col) => (
                         <th
                           key={col}
@@ -164,7 +164,7 @@ function MistakesPage() {
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-black/5">
+                  <tbody className="divide-y divide-border-row">
                     {mistakes.map((mistake) => {
                       const date = new Date(mistake.createdAt).toLocaleDateString("en-AU", {
                         day: "2-digit",
@@ -174,7 +174,7 @@ function MistakesPage() {
                       return (
                         <tr
                           key={mistake.id}
-                          className="align-top transition-colors duration-150 hover:bg-gray-50"
+                          className="align-top transition-colors duration-150 hover:bg-surface-hover"
                         >
                           <td className="overflow-hidden px-5 py-3">
                             <span
