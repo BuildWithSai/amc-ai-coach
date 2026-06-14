@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-14T00:00:00.000Z",
+  "title": "Design System: AMC AI Coach",
+  "extensions": {
+    "colorMeta": {
+      "signal-blue": {
+        "role": "primary",
+        "displayName": "Signal Blue",
+        "canonical": "#0A84FF",
+        "tonalRamp": ["#00234E", "#003D8F", "#0057C8", "#006FEE", "#0A84FF", "#4DABFF", "#93CCFF", "#E0F2FF"]
+      },
+      "signal-blue-deep": {
+        "role": "primary-hover",
+        "displayName": "Signal Blue Deep",
+        "canonical": "#0071E3",
+        "tonalRamp": ["#001D40", "#003380", "#0049B8", "#0060D0", "#0071E3", "#3D99F5", "#89C2FF", "#D6ECFF"]
+      },
+      "signal-blue-wash": {
+        "role": "primary-tint",
+        "displayName": "Signal Blue Wash",
+        "canonical": "#EBF5FF",
+        "tonalRamp": ["#003D8F", "#0057C8", "#0A84FF", "#4DABFF", "#93CCFF", "#C7E4FF", "#E0F2FF", "#EBF5FF"]
+      },
+      "secondary-ink": {
+        "role": "neutral",
+        "displayName": "Secondary Ink",
+        "canonical": "#6B6B70",
+        "tonalRamp": ["#1C1C1E", "#2C2C2E", "#3A3A3C", "#48484A", "#636366", "#6B6B70", "#8E8E93", "#C7C7CC"]
+      },
+      "tertiary-ink": {
+        "role": "neutral-muted",
+        "displayName": "Tertiary Ink",
+        "canonical": "#8A8A8F",
+        "tonalRamp": ["#2C2C2E", "#3A3A3C", "#48484A", "#636366", "#8A8A8F", "#AEAEB2", "#C7C7CC", "#E5E5EA"]
+      },
+      "success": {
+        "role": "semantic-positive",
+        "displayName": "Study Green",
+        "canonical": "#28A745",
+        "tonalRamp": ["#0A3A17", "#135A25", "#1D7A33", "#239F3D", "#28A745", "#52C16A", "#87D89A", "#C7F0D4"]
+      },
+      "danger": {
+        "role": "semantic-negative",
+        "displayName": "Alert Red",
+        "canonical": "#D63031",
+        "tonalRamp": ["#4A0000", "#7A0000", "#B30000", "#C92020", "#D63031", "#E06262", "#EFA0A0", "#FAD7D7"]
+      },
+      "warning": {
+        "role": "semantic-caution",
+        "displayName": "Amber Caution",
+        "canonical": "#A85400",
+        "tonalRamp": ["#3A1A00", "#602C00", "#8A4100", "#A85400", "#CC6600", "#E08040", "#F0B080", "#FAD8B0"]
+      },
+      "surface": {
+        "role": "neutral-surface",
+        "displayName": "Surface White",
+        "canonical": "#FFFFFF",
+        "tonalRamp": ["#1C1C1E", "#3A3A3C", "#636366", "#8E8E93", "#C7C7CC", "#E5E5EA", "#F2F2F7", "#FFFFFF"]
+      },
+      "background": {
+        "role": "neutral-bg",
+        "displayName": "Off-Chrome",
+        "canonical": "#F5F5F7",
+        "tonalRamp": ["#1C1C1E", "#3A3A3C", "#636366", "#8E8E93", "#C7C7CC", "#E5E5EA", "#F2F2F7", "#F5F5F7"]
+      },
+      "brand-mark": {
+        "role": "neutral-dark",
+        "displayName": "Brand Mark Dark",
+        "canonical": "#1C1C1E",
+        "tonalRamp": ["#000000", "#1C1C1E", "#2C2C2E", "#3A3A3C", "#48484A", "#636366", "#8E8E93", "#C7C7CC"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles only. One per page. Never inside cards." },
+      "headline": { "displayName": "Headline", "purpose": "AI insight headlines. Dense informational heading where the data headline is the message." },
+      "title": { "displayName": "Title", "purpose": "Card section titles, panel headers. One level below Display; used inside cards." },
+      "body": { "displayName": "Body", "purpose": "Primary UI text — table cells, form values, insight copy. Cap prose at 65–75ch." },
+      "label": { "displayName": "Label", "purpose": "Secondary UI — form labels, table column headers, meta information." },
+      "mono": { "displayName": "Mono", "purpose": "Tabular numeric data — accuracy percentages, question counts, session numbers." }
+    },
+    "shadows": [
+      {
+        "name": "brand-glow",
+        "value": "0 1px 4px rgba(10,132,255,0.45)",
+        "purpose": "Sidebar brand logo mark only. One deliberate use; its singularity makes the brand mark feel anchored."
+      },
+      {
+        "name": "surface-lift",
+        "value": "0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)",
+        "purpose": "Floating elements above the page surface — future dropdowns, popovers, command palettes. Not yet used; defined to establish vocabulary."
+      },
+      {
+        "name": "modal-lift",
+        "value": "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)",
+        "purpose": "Full modal dialogs and overlay sheets. Must clearly separate from all page content."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "150ms ease-out",
+        "purpose": "Default transition for all UI state changes — hover, active, focus. Fast enough to feel responsive, slow enough to feel deliberate."
+      },
+      {
+        "name": "row-highlight",
+        "value": "800ms ease-out",
+        "purpose": "New-row flash animation in Study Sessions table. Background-color from accent tint to transparent."
+      }
+    ],
+    "breakpoints": [
+      { "name": "mobile-cap", "value": "768px", "note": "Sidebar collapses below this threshold. Not yet implemented — see audit P1 responsive gap." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main call-to-action. Used for form submits, Generate insight, Save session, Save mistake.",
+      "html": "<button class=\"ds-btn-primary\">Save session</button>",
+      "css": ".ds-btn-primary { background: #0A84FF; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 500; line-height: 1.3; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; outline: none; transition: background 150ms ease-out, transform 150ms ease-out; } .ds-btn-primary:hover { background: #0071E3; } .ds-btn-primary:focus-visible { box-shadow: 0 0 0 2px rgba(10,132,255,0.40); } .ds-btn-primary:active { transform: scale(0.98); } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Lower-hierarchy action. Used for Generate → buttons inside AI Coach cards.",
+      "html": "<button class=\"ds-btn-secondary\">Generate →</button>",
+      "css": ".ds-btn-secondary { background: #F2F2F7; color: #1C1C1E; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif; font-size: 13px; font-weight: 500; line-height: 1.3; padding: 6px 12px; border: none; border-radius: 8px; cursor: pointer; outline: none; transition: background 150ms ease-out, transform 150ms ease-out; } .ds-btn-secondary:hover { background: #E5E5EA; } .ds-btn-secondary:focus-visible { box-shadow: 0 0 0 2px rgba(0,0,0,0.20); } .ds-btn-secondary:active { transform: scale(0.98); } .ds-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Single-line text or number input. Used in Study Sessions and Mistakes forms.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-label\" for=\"ds-input-demo\">Attempted</label><input class=\"ds-input\" id=\"ds-input-demo\" type=\"number\" placeholder=\"0\" /></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; } .ds-label { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif; font-size: 13px; font-weight: 500; color: #6B6B70; } .ds-input { height: 38px; width: 100%; background: #FFFFFF; border: 1px solid rgba(0,0,0,0.10); border-radius: 8px; padding: 0 12px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif; font-size: 14px; color: #1C1C1E; outline: none; transition: border-color 150ms ease-out, box-shadow 150ms ease-out; box-sizing: border-box; } .ds-input::placeholder { color: #6B6B70; } .ds-input:focus { border-color: #0A84FF; box-shadow: 0 0 0 2px rgba(10,132,255,0.20); }"
+    },
+    {
+      "name": "Content Card",
+      "kind": "card",
+      "description": "Primary container for page content. White surface, visible border, no shadow.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><h2 class=\"ds-card-title\">Topic Performance</h2><span class=\"ds-card-meta\">5 topics</span></div><div class=\"ds-card-body\">Card content here.</div></div>",
+      "css": ".ds-card { background: #FFFFFF; border: 1px solid rgba(0,0,0,0.10); border-radius: 12px; overflow: hidden; } .ds-card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid rgba(0,0,0,0.10); } .ds-card-title { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif; font-size: 17px; font-weight: 600; color: #1C1C1E; margin: 0; } .ds-card-meta { font-size: 13px; color: #6B6B70; } .ds-card-body { padding: 24px; }"
+    },
+    {
+      "name": "Topic Chip",
+      "kind": "chip",
+      "refersTo": "chip-topic",
+      "description": "Inline topic label in the Mistakes table. Signal Blue tint background, Signal Blue text, pill shape.",
+      "html": "<span class=\"ds-chip-topic\" title=\"Cardiology\">Cardiology</span>",
+      "css": ".ds-chip-topic { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: #EBF5FF; color: #0A84FF; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif; font-size: 12px; font-weight: 500; padding: 2px 10px; border-radius: 9999px; }"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "description": "Navigation link in the 256px fixed sidebar. System-font, medium weight. Active state uses Signal Blue wash + accent text.",
+      "html": "<a class=\"ds-nav-item ds-nav-item--active\" href=\"/\" aria-current=\"page\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"/></svg>Dashboard</a>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 500; color: rgba(60,60,67,0.80); text-decoration: none; transition: background 100ms ease-out, color 100ms ease-out; } .ds-nav-item:hover { background: #F2F2F7; color: #1C1C1E; } .ds-nav-item--active { background: #EBF3FF; color: #0A84FF; } .ds-nav-icon { width: 16px; height: 16px; flex-shrink: 0; color: currentColor; }"
+    },
+    {
+      "name": "Evidence Panel",
+      "kind": "custom",
+      "description": "Gray-50 tint panel inside a card that displays AI-computed evidence before and after a generated insight. aria-live required.",
+      "html": "<div class=\"ds-evidence\" role=\"region\" aria-live=\"polite\" aria-atomic=\"true\"><div class=\"ds-evidence-grid\"><div class=\"ds-evidence-item\"><p class=\"ds-evidence-value\">52%</p><p class=\"ds-evidence-label\">Accuracy</p><p class=\"ds-evidence-delta ds-evidence-delta--declining\">declining</p></div><div class=\"ds-evidence-item\"><p class=\"ds-evidence-value\">Cardiology</p><p class=\"ds-evidence-label\">Priority topic</p></div></div></div>",
+      "css": ".ds-evidence { background: #F9F9F9; border-radius: 8px; padding: 16px; } .ds-evidence-grid { display: flex; flex-wrap: wrap; gap: 16px 32px; } .ds-evidence-item { min-width: 72px; } .ds-evidence-value { font-family: 'SF Mono', ui-monospace, monospace; font-size: 18px; font-weight: 700; color: #1C1C1E; margin: 0; line-height: 1; } .ds-evidence-label { font-size: 12px; color: #6B6B70; margin: 4px 0 0; } .ds-evidence-delta { font-size: 11px; margin: 2px 0 0; } .ds-evidence-delta--declining { color: #D63031; } .ds-evidence-delta--improving { color: #28A745; } .ds-evidence-delta--stable { color: #6B6B70; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Evidence Room",
+    "overview": "The interface surfaces data the way a case file surfaces facts — methodically, without decoration. Every metric on screen exists to answer one question: what should I study next? If a data point does not serve that judgment, it does not earn space. The AI coach is the analyst; the user is the credentialed expert who decides.\n\nThis is a tool, not an experience. The reference is Linear: dense, keyboard-first, deliberately unglamorous. The system is quiet so the data can be loud.\n\nWhat this system explicitly rejects: the generic SaaS AI aesthetic (purple gradients, hero metrics, \"Sign up for free\" energy); clinical hospital software (grey-on-grey EMR aesthetics); and gamified study apps (streak counters, reward animations, encouragement theater).",
+    "keyCharacteristics": [
+      "System-font stack — no loaded display fonts; renders natively on all platforms",
+      "Signal Blue (#0A84FF) appears on interactive and data-state elements only — never decorative",
+      "Flat surface hierarchy — borders and background tints separate layers; shadows for floating elements only",
+      "Dense but breathable — table rows are tight; card padding is generous; the contrast is intentional",
+      "Semantic state vocabulary — success/danger/warning have fixed hex values with verified contrast ratios"
+    ],
+    "rules": [
+      {
+        "name": "The One Voice Rule",
+        "body": "Signal Blue appears on ≤10% of any given screen. The moment it decorates something non-interactive, it loses its meaning as a direction signal.",
+        "section": "colors"
+      },
+      {
+        "name": "The Semantic Fence Rule",
+        "body": "Success, Danger, and Warning colors are reserved exclusively for performance states and validation. Prohibited as general-purpose accents or branding elements.",
+        "section": "colors"
+      },
+      {
+        "name": "The Contrast Floor Rule",
+        "body": "Tertiary Ink (#8A8A8F) is prohibited on text smaller than 18px (or smaller than 14px bold). Every new element using tertiary ink must pass the 3.20:1 large-text threshold before shipping.",
+        "section": "colors"
+      },
+      {
+        "name": "The No-Personality Rule",
+        "body": "No display fonts. No custom type. Warmth comes from copy and data specificity, not from a humanist serif or custom script.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Fence Rule",
+        "body": "All numeric data must use tabular-nums and the monospace stack. Mixed proportional and tabular numbers in the same column is prohibited.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Content surfaces are never elevated. Shadows appear only on elements that genuinely float above the layout — dropdowns, modals, command palettes.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Glow Rule",
+        "body": "The Brand Glow shadow (rgba(10,132,255,0.45)) is singular — the sidebar brand logo mark only. No other element uses a colored shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use Signal Blue (#0A84FF) only on interactive elements and active states.",
+      "Do use text-secondary (#6B6B70) as the default for all informational text that isn't primary content.",
+      "Do use placeholder:text-secondary on all form inputs — tertiary ink fails WCAG AA at placeholder sizes.",
+      "Do replace alert() validation with inline <p role=\"alert\"> adjacent to the failing field.",
+      "Do wire aria-current=\"page\" on active nav links.",
+      "Do wrap async AI output panels in aria-live=\"polite\" aria-atomic=\"true\".",
+      "Do annotate every <label> with htmlFor matching its input's id.",
+      "Do apply tabular-nums and the mono stack to all numeric data.",
+      "Do use rounded-sm (8px) for interactive elements and rounded-md (12px) for containers.",
+      "Do keep the prefers-reduced-motion override in index.css."
+    ],
+    "donts": [
+      "Don't use purple gradients, violet tints, cyan-on-dark, or multi-hue gradients as accents.",
+      "Don't use border-left or border-right > 1px as a colored stripe on cards or alerts.",
+      "Don't use background-clip: text with a gradient. Gradient text is never meaningful.",
+      "Don't use alert() for validation — use inline role=\"alert\" instead.",
+      "Don't use Tertiary Ink (#8A8A8F) on text ≤14px weight 400–500.",
+      "Don't remove the prefers-reduced-motion override from index.css.",
+      "Don't design for generic SaaS AI aesthetic — no hero metrics with gradient accents, no AI badges.",
+      "Don't design for clinical/hospital software aesthetics — no grey-on-grey, no heavy borders.",
+      "Don't gamify — no streaks, no reward animations, no encouragement theater.",
+      "Don't nest cards inside cards. Gray-50 panel inside a white card is the only permitted interior tint.",
+      "Don't use resize on textareas — resize-none is required."
+    ]
+  }
+}
