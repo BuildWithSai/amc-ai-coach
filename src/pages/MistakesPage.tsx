@@ -64,14 +64,14 @@ function MistakesPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto w-4/5 px-6 py-8">
+      <div className="mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:w-4/5">
 
         <SectionTitle
           title="Mistakes"
           subtitle="Every mistake logged is a pattern found."
         />
 
-        <div className="grid grid-cols-[380px_1fr] items-start gap-6">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[380px_1fr]">
 
           {/* Form card */}
           <Card padding>
@@ -162,7 +162,8 @@ function MistakesPage() {
                   </p>
                 </div>
               ) : (
-                <table className="w-full table-fixed">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[560px] table-fixed">
                   <colgroup>
                     <col className="w-[18%]" />
                     <col className="w-[22%]" />
@@ -227,6 +228,7 @@ function MistakesPage() {
                     })}
                   </tbody>
                 </table>
+                </div>
               )}
             </Card>
           </div>

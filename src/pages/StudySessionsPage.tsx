@@ -71,14 +71,14 @@ function StudySessionsPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto w-4/5 px-6 py-8">
+      <div className="mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:w-4/5">
 
         <SectionTitle
           title="Study Sessions"
           subtitle="Log your practice sessions to track performance over time."
         />
 
-        <div className="grid grid-cols-[380px_1fr] items-start gap-6">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[380px_1fr]">
 
           {/* Form card */}
           <Card padding>
@@ -170,7 +170,8 @@ function StudySessionsPage() {
                 </p>
               </div>
             ) : (
-              <table className="w-full">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px]">
                 <thead>
                   <tr className="border-b border-black/10">
                     {["Topic", "Date", "Attempted", "Correct", "Accuracy"].map((col) => (
@@ -218,6 +219,7 @@ function StudySessionsPage() {
                   })}
                 </tbody>
               </table>
+              </div>
             )}
           </Card>
         </div>

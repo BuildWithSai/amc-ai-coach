@@ -177,7 +177,7 @@ function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto w-4/5 px-6 py-8">
+      <div className="mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:w-4/5">
         {/* Header */}
         <div className="mb-8 flex items-start justify-between">
           <div>
@@ -207,7 +207,7 @@ function DashboardPage() {
         ) : (
           <>
             {/* Stats */}
-            <div className="mb-6 grid grid-cols-4 gap-4">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
               {STATS.map(({ label, value, delta, pos }) => (
                 <div
                   key={label}
@@ -247,9 +247,9 @@ function DashboardPage() {
             {/* AI Coaching Brief — insight state */}
             {insight && !error && (
               <div className="mb-6 rounded-xl border border-black/10 bg-white">
-                <div className="grid grid-cols-[1fr_308px]">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_308px]">
                   {/* Left: insight + action */}
-                  <div className="border-r border-black/5 p-6">
+                  <div className="border-b border-black/5 p-6 lg:border-b-0 lg:border-r">
                     <h2 className="mb-3 text-[20px] font-semibold leading-snug text-balance text-gray-900">
                       {insight.headline}
                     </h2>
@@ -406,7 +406,8 @@ function DashboardPage() {
                 </span>
               </div>
 
-              <table className="w-full">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px]">
                 <thead>
                   <tr className="border-b border-black/5">
                     {(
@@ -449,6 +450,7 @@ function DashboardPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           </>
         )}

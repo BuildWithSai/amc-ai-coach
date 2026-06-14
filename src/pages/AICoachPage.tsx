@@ -109,7 +109,7 @@ function AICoachPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto w-4/5 px-6 py-8">
+      <div className="mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:w-4/5">
 
         <SectionTitle
           title="AI Coach"

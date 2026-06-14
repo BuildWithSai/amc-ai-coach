@@ -15,7 +15,7 @@ export function Button({
 }: ButtonProps) {
   const sizes = {
     sm: "px-3 py-1.5 text-[13px]",
-    md: "px-4 py-2 text-[14px]",
+    md: "min-h-[44px] px-4 py-2 text-[14px] md:min-h-0",
   };
   const variants = {
     primary:
