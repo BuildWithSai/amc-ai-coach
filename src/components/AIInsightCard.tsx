@@ -50,12 +50,12 @@ function AIInsightCard({
     c === 'red'   ? 'text-danger'
     : c === 'amber' ? 'text-warning'
     : c === 'green' ? 'text-success'
-    : 'text-tertiary'
+    : 'text-secondary'
 
   return (
-    <div className="mt-4">
+    <div className="mt-4" aria-live="polite" aria-atomic="true">
 
-      {/* Evidence panel — rounded-lg (panel, not nested card) */}
+      {/* Evidence panel */}
       {evidence.length > 0 && (
         <div className="mb-5 rounded-lg bg-gray-50 p-4">
           <div className="flex flex-wrap gap-x-8 gap-y-4">
@@ -89,7 +89,7 @@ function AIInsightCard({
 
       {/* Error state */}
       {error && !isLoading && (
-        <div className="rounded-lg bg-gray-50 px-4 py-3">
+        <div className="rounded-lg bg-gray-50 px-4 py-3" role="alert">
           <p className="text-[14px] text-secondary">
             AI insights temporarily unavailable. Your data is safe.
           </p>
@@ -109,7 +109,6 @@ function AIInsightCard({
             {insight}
           </p>
 
-          {/* Key takeaway — rounded-lg (panel, not nested card) */}
           {keyTakeaway && (
             <div className="mt-4 rounded-lg bg-accent-soft px-4 py-3">
               <p className="mb-1.5 text-[12px] font-semibold text-accent">
@@ -124,17 +123,17 @@ function AIInsightCard({
           <div className="mt-4 flex items-center justify-between border-t border-black/5 pt-4">
             <div className="flex items-center gap-4">
               {confidence && (
-                <span className="tabular-nums text-[13px] text-tertiary">
+                <span className="tabular-nums text-[13px] text-secondary">
                   Confidence: {confidence}
                 </span>
               )}
               {priority && (
-                <span className="tabular-nums text-[13px] text-tertiary">
+                <span className="tabular-nums text-[13px] text-secondary">
                   Priority: {priority}
                 </span>
               )}
               {!confidence && !priority && (
-                <span className="text-[13px] text-tertiary">Was this helpful?</span>
+                <span className="text-[13px] text-secondary">Was this helpful?</span>
               )}
             </div>
 
@@ -143,10 +142,14 @@ function AIInsightCard({
                 type="button"
                 onClick={() => handleFeedback('helpful')}
                 title="Helpful"
-                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] ${
+                aria-pressed={feedback === 'helpful'}
+                disabled={feedback !== null}
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed ${
                   feedback === 'helpful'
                     ? 'bg-accent-soft text-accent'
-                    : 'bg-gray-100 text-secondary hover:bg-gray-200'
+                    : feedback !== null
+                      ? 'bg-gray-100 text-gray-300'
+                      : 'bg-gray-100 text-secondary hover:bg-gray-200'
                 }`}
               >
                 <ThumbsUp className="h-4 w-4" />
@@ -155,10 +158,14 @@ function AIInsightCard({
                 type="button"
                 onClick={() => handleFeedback('not_helpful')}
                 title="Not helpful"
-                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] ${
+                aria-pressed={feedback === 'not_helpful'}
+                disabled={feedback !== null}
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed ${
                   feedback === 'not_helpful'
                     ? 'bg-red-50 text-danger'
-                    : 'bg-gray-100 text-secondary hover:bg-gray-200'
+                    : feedback !== null
+                      ? 'bg-gray-100 text-gray-300'
+                      : 'bg-gray-100 text-secondary hover:bg-gray-200'
                 }`}
               >
                 <ThumbsDown className="h-4 w-4" />

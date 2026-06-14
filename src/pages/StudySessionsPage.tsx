@@ -26,10 +26,10 @@ const AMC_TOPICS: AMCTopic[] = [
 ];
 
 const inputCls =
-  "h-[38px] w-full rounded-lg border border-black/10 bg-white px-3 text-[14px] text-gray-900 transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
+  "h-[38px] w-full rounded-lg border border-black/10 bg-white px-3 text-[14px] text-gray-900 transition-all duration-150 placeholder:text-secondary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
 
 const monoInputCls =
-  "h-[38px] w-full rounded-lg border border-black/10 bg-white px-3 tabular-nums text-[14px] text-gray-900 transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
+  "h-[38px] w-full rounded-lg border border-black/10 bg-white px-3 tabular-nums text-[14px] text-gray-900 transition-all duration-150 placeholder:text-secondary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
 
 const labelCls = "mb-1.5 block text-[13px] font-medium text-secondary";
 
@@ -41,13 +41,15 @@ function StudySessionsPage() {
   const [notes, setNotes] = useState("");
   const [sessions, setSessions] = useState<StudySession[]>(getSessions);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState("");
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (Number(correct) + Number(incorrect) !== Number(attempted)) {
-      alert("Correct + Incorrect must equal Attempted");
+      setValidationError("Correct + Incorrect must equal Attempted.");
       return;
     }
+    setValidationError("");
     const newSession: StudySession = {
       id: uuidv4(),
       createdAt: new Date().toISOString(),
@@ -82,10 +84,11 @@ function StudySessionsPage() {
           <Card padding>
             <h2 className="mb-5 text-[15px] font-semibold text-gray-900">Add session</h2>
 
-            <form onSubmit={handleSave}>
+            <form onSubmit={handleSave} noValidate>
               <div className="mb-4">
-                <label className={labelCls}>Topic</label>
+                <label htmlFor="session-topic" className={labelCls}>Topic</label>
                 <select
+                  id="session-topic"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value as AMCTopic)}
                   className={inputCls}
@@ -98,45 +101,58 @@ function StudySessionsPage() {
 
               <div className="mb-4 grid grid-cols-3 gap-3">
                 <div>
-                  <label className={labelCls}>Attempted</label>
+                  <label htmlFor="session-attempted" className={labelCls}>Attempted</label>
                   <input
+                    id="session-attempted"
                     type="number"
+                    min="0"
                     value={attempted}
-                    onChange={(e) => setAttempted(e.target.value)}
+                    onChange={(e) => { setAttempted(e.target.value); setValidationError(""); }}
                     className={monoInputCls}
                     placeholder="0"
                   />
                 </div>
                 <div>
-                  <label className={labelCls}>Correct</label>
+                  <label htmlFor="session-correct" className={labelCls}>Correct</label>
                   <input
+                    id="session-correct"
                     type="number"
+                    min="0"
                     value={correct}
-                    onChange={(e) => setCorrect(e.target.value)}
+                    onChange={(e) => { setCorrect(e.target.value); setValidationError(""); }}
                     className={monoInputCls}
                     placeholder="0"
                   />
                 </div>
                 <div>
-                  <label className={labelCls}>Incorrect</label>
+                  <label htmlFor="session-incorrect" className={labelCls}>Incorrect</label>
                   <input
+                    id="session-incorrect"
                     type="number"
+                    min="0"
                     value={incorrect}
-                    onChange={(e) => setIncorrect(e.target.value)}
+                    onChange={(e) => { setIncorrect(e.target.value); setValidationError(""); }}
                     className={monoInputCls}
                     placeholder="0"
                   />
                 </div>
               </div>
 
+              {validationError && (
+                <p role="alert" className="mb-4 text-[13px] text-danger">
+                  {validationError}
+                </p>
+              )}
+
               <div className="mb-6">
-                <label className={labelCls}>Notes</label>
+                <label htmlFor="session-notes" className={labelCls}>Notes</label>
                 <textarea
+                  id="session-notes"
                   rows={3}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Optional notes about this session…"
-                  className="w-full resize-none rounded-lg border border-black/10 bg-white px-3 py-2 text-[14px] text-gray-900 transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                  className="w-full resize-none rounded-lg border border-black/10 bg-white px-3 py-2 text-[14px] text-gray-900 transition-all duration-150 placeholder:text-secondary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                 />
               </div>
 

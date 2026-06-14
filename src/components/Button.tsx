@@ -18,12 +18,14 @@ export function Button({
     md: "px-4 py-2 text-[14px]",
   };
   const variants = {
-    primary: "bg-[#0A84FF] text-white hover:bg-[#0071E3]",
-    secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",
+    primary:
+      "bg-accent text-white hover:bg-accent-hover focus-visible:ring-2 focus-visible:ring-accent/40",
+    secondary:
+      "bg-gray-100 text-gray-900 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-black/20",
   };
   return (
     <button
-      className={`rounded-lg font-medium transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${sizes[size]} ${variants[variant]} ${className}`}
+      className={`rounded-lg font-medium outline-none transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${sizes[size]} ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

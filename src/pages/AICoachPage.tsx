@@ -137,7 +137,7 @@ function AICoachPage() {
                 <div>
                   <h2 className="text-[17px] font-semibold text-gray-900">Weak Topic Analysis</h2>
                   {weakTopics.length === 1 && (
-                    <p className="mt-0.5 text-[13px] text-tertiary">
+                    <p className="mt-0.5 text-[13px] text-secondary">
                       Only one topic logged — insights improve with more data.
                     </p>
                   )}
@@ -152,7 +152,7 @@ function AICoachPage() {
               </div>
               <div className="px-6 py-5">
                 {!isLoadingWeakTopics && !weakTopicError && !weakTopicInsight && (
-                  <p className="text-[14px] text-tertiary">
+                  <p className="text-[14px] text-secondary">
                     Ranks your weakest topics from session accuracy and explains why each is lagging.
                   </p>
                 )}
@@ -187,13 +187,13 @@ function AICoachPage() {
               </div>
               <div className="px-6 py-5">
                 {mistakes.length === 0 ? (
-                  <p className="text-[14px] text-tertiary">
+                  <p className="text-[14px] text-secondary">
                     No mistakes logged yet — log mistakes to surface recurring patterns.
                   </p>
                 ) : (
                   <>
                     {!isLoadingMistakePattern && !mistakePatternError && !mistakePatternInsight && (
-                      <p className="text-[14px] text-tertiary">
+                      <p className="text-[14px] text-secondary">
                         Finds recurring error themes across your logged mistakes and suggests targeted fixes.
                       </p>
                     )}
@@ -234,7 +234,7 @@ function AICoachPage() {
               </div>
               <div className="px-6 py-5">
                 {!isLoadingRecommendations && !recommendationError && !recommendationInsight && (
-                  <p className="text-[14px] text-tertiary">
+                  <p className="text-[14px] text-secondary">
                     Builds a prioritised study plan from your weak topics and mistake patterns.
                   </p>
                 )}

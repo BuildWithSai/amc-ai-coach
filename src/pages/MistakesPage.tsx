@@ -26,7 +26,7 @@ const AMC_TOPICS: AMCTopic[] = [
 ];
 
 const inputCls =
-  "w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-[14px] text-gray-900 transition-all duration-150 placeholder:text-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
+  "w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-[14px] text-gray-900 transition-all duration-150 placeholder:text-secondary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
 
 const labelCls = "mb-1.5 block text-[13px] font-medium text-secondary";
 
@@ -36,13 +36,15 @@ function MistakesPage() {
   const [whyWrong, setWhyWrong] = useState("");
   const [correctConcept, setCorrectConcept] = useState("");
   const [mistakes, setMistakes] = useState<Mistake[]>(getMistakes);
+  const [validationError, setValidationError] = useState("");
 
   const handleSaveMistake = (e: React.FormEvent) => {
     e.preventDefault();
     if (!questionSummary || !whyWrong || !correctConcept) {
-      alert("Please fill all required fields");
+      setValidationError("Please fill in all required fields.");
       return;
     }
+    setValidationError("");
     const newMistake: Mistake = {
       id: uuidv4(),
       createdAt: new Date().toISOString(),
@@ -75,10 +77,11 @@ function MistakesPage() {
           <Card padding>
             <h2 className="mb-5 text-[15px] font-semibold text-gray-900">Log mistake</h2>
 
-            <form onSubmit={handleSaveMistake}>
+            <form onSubmit={handleSaveMistake} noValidate>
               <div className="mb-4">
-                <label className={labelCls}>Topic</label>
+                <label htmlFor="mistake-topic" className={labelCls}>Topic</label>
                 <select
+                  id="mistake-topic"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value as AMCTopic)}
                   className={`h-[38px] ${inputCls}`}
@@ -90,37 +93,52 @@ function MistakesPage() {
               </div>
 
               <div className="mb-4">
-                <label className={labelCls}>Question summary</label>
+                <label htmlFor="mistake-question" className={labelCls}>
+                  Question summary <span className="text-danger" aria-hidden="true">*</span>
+                </label>
                 <textarea
+                  id="mistake-question"
                   rows={3}
                   value={questionSummary}
-                  onChange={(e) => setQuestionSummary(e.target.value)}
+                  onChange={(e) => { setQuestionSummary(e.target.value); setValidationError(""); }}
                   placeholder="Brief description of the question…"
                   className={`${inputCls} resize-none`}
                 />
               </div>
 
               <div className="mb-4">
-                <label className={labelCls}>Why I got it wrong</label>
+                <label htmlFor="mistake-why" className={labelCls}>
+                  Why I got it wrong <span className="text-danger" aria-hidden="true">*</span>
+                </label>
                 <textarea
+                  id="mistake-why"
                   rows={3}
                   value={whyWrong}
-                  onChange={(e) => setWhyWrong(e.target.value)}
+                  onChange={(e) => { setWhyWrong(e.target.value); setValidationError(""); }}
                   placeholder="What confused you or what did you miss…"
                   className={`${inputCls} resize-none`}
                 />
               </div>
 
-              <div className="mb-6">
-                <label className={labelCls}>Correct concept</label>
+              <div className="mb-4">
+                <label htmlFor="mistake-concept" className={labelCls}>
+                  Correct concept <span className="text-danger" aria-hidden="true">*</span>
+                </label>
                 <textarea
+                  id="mistake-concept"
                   rows={3}
                   value={correctConcept}
-                  onChange={(e) => setCorrectConcept(e.target.value)}
+                  onChange={(e) => { setCorrectConcept(e.target.value); setValidationError(""); }}
                   placeholder="The key fact or principle to remember…"
                   className={`${inputCls} resize-none`}
                 />
               </div>
+
+              {validationError && (
+                <p role="alert" className="mb-4 text-[13px] text-danger">
+                  {validationError}
+                </p>
+              )}
 
               <Button type="submit">Save mistake</Button>
             </form>
@@ -129,7 +147,7 @@ function MistakesPage() {
           {/* Table column */}
           <div className="flex flex-col gap-3">
             {mistakes.length > 0 && (
-              <p className="tabular-nums text-[13px] text-tertiary">
+              <p className="tabular-nums text-[13px] text-secondary">
                 {mistakes.length} {mistakes.length === 1 ? "mistake" : "mistakes"} ·{" "}
                 {uniqueTopics} {uniqueTopics === 1 ? "topic" : "topics"}
               </p>

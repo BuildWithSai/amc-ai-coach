@@ -57,6 +57,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <Link
                       key={to}
                       to={to}
+                      aria-current={active ? "page" : undefined}
                       className={`group flex items-center gap-2.5 rounded-[8px] px-3 py-[9px] text-[14px] font-medium transition-all duration-100 ${
                         active
                           ? "bg-[#EBF3FF] text-[#0A84FF]"
@@ -83,7 +84,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <p className="mb-1.5 px-3 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[#86868B]/50 select-none">
               Reports
             </p>
-            <span className="flex cursor-not-allowed select-none items-center gap-2.5 rounded-[8px] px-3 py-[9px] text-[14px] font-medium text-[#86868B]/35">
+            <span role="button" aria-disabled="true" tabIndex={-1} className="flex cursor-not-allowed select-none items-center gap-2.5 rounded-[8px] px-3 py-[9px] text-[14px] font-medium text-[#86868B]/35">
               <BarChart3 className="h-4 w-4 shrink-0" />
               <span>Progress</span>
               <span className="ml-auto rounded-full bg-[#F2F2F7] px-[7px] py-[2px] text-[10px] font-semibold uppercase tracking-wide text-[#86868B]/55">
@@ -96,7 +97,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Profile */}
         <div className="border-t border-black/[0.07] p-3">
           <div className="flex items-center gap-3 rounded-[8px] px-3 py-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-[11px] font-bold text-white shadow-sm">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1C1C1E] text-[11px] font-bold text-white">
               L
             </div>
             <div className="min-w-0 flex-1">

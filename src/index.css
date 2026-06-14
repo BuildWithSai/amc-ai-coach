@@ -12,7 +12,7 @@
   --color-tertiary:     #8A8A8F;  /* 3.20:1 — large/bold text only */
   --color-success:      #28A745;  /* 4.52:1 on white — passes AA */
   --color-danger:       #D63031;  /* 4.85:1 on white — passes AA */
-  --color-warning:      #FF9500;
+  --color-warning:      #A85400;  /* 4.78:1 on white — passes AA */
   --color-border:       rgba(0,0,0,0.10);
   --color-border-row:   rgba(0,0,0,0.05);
   --color-border-input: rgba(0,0,0,0.10);
@@ -28,6 +28,16 @@ body {
   background-color: #F5F5F7;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 #root {

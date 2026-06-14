@@ -73,7 +73,7 @@ function TrendCell({ trend }: { trend: number }) {
       </span>
     );
   return (
-    <span className="flex items-center gap-1 tabular-nums text-[13px] text-tertiary">
+    <span className="flex items-center gap-1 tabular-nums text-[13px] text-secondary">
       <Minus className="h-3.5 w-3.5 shrink-0" />
       0%
     </span>
@@ -173,7 +173,7 @@ function DashboardPage() {
       ? "text-danger"
       : trend === "improving"
         ? "text-success"
-        : "text-tertiary";
+        : "text-secondary";
 
   return (
     <AppShell>
@@ -232,6 +232,9 @@ function DashboardPage() {
               ))}
             </div>
 
+            {/* AI Coaching Brief */}
+            <div aria-live="polite" aria-atomic="true">
+
             {/* AI Coaching Brief — error state */}
             {error && (
               <div className="mb-6 rounded-xl border border-black/10 bg-white p-6">
@@ -267,7 +270,7 @@ function DashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="text-[13px] text-tertiary">Useful?</span>
+                      <span className="text-[13px] text-secondary">Useful?</span>
                       <button
                         type="button"
                         aria-label="Helpful"
@@ -343,7 +346,7 @@ function DashboardPage() {
                         <p className="mt-2 text-[13px] text-secondary">
                           Mistakes
                         </p>
-                        <p className="mt-1 text-[12px] text-tertiary">
+                        <p className="mt-1 text-[12px] text-secondary">
                           mistakes logged
                         </p>
                       </div>
@@ -358,7 +361,7 @@ function DashboardPage() {
                         <p className="mt-2 text-[13px] text-secondary">
                           Sessions
                         </p>
-                        <p className="mt-1 text-[12px] text-tertiary">
+                        <p className="mt-1 text-[12px] text-secondary">
                           sessions logged
                         </p>
                       </div>
@@ -369,7 +372,7 @@ function DashboardPage() {
                         <p className="mt-2 text-[13px] text-secondary">
                           Top pattern
                         </p>
-                        <p className="mt-1 text-[12px] text-tertiary">
+                        <p className="mt-1 text-[12px] text-secondary">
                           priority topic
                         </p>
                       </div>
@@ -389,6 +392,8 @@ function DashboardPage() {
                 </div>
               </div>
             )}
+
+            </div>{/* end aria-live */}
 
             {/* Topic Performance */}
             <div className="overflow-hidden rounded-xl border border-black/10 bg-white">
