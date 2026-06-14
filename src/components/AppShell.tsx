@@ -53,9 +53,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex h-full w-64 shrink-0 flex-col border-r border-black/[0.07] bg-white transition-transform duration-200 ease-out md:relative md:z-auto md:translate-x-0 ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        data-open={mobileOpen.toString()}
+        className="fixed inset-y-0 left-0 z-40 flex h-full w-64 shrink-0 flex-col border-r border-black/[0.07] bg-white transition-transform duration-200 ease-out md:relative md:z-auto md:translate-x-0"
       >
         {/* Brand */}
         <div className="flex items-center justify-between gap-3 px-5 py-5">

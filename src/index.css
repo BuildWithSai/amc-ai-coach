@@ -43,3 +43,12 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* Mobile sidebar drawer — transform driven by data-open attribute.
+   Dynamic Tailwind ternary classes are not reliably scanned so the
+   closed state is expressed here instead. Desktop (md+) is unaffected. */
+@media (max-width: 767px) {
+  aside[data-open="false"] {
+    transform: translateX(-100%);
+  }
+}
