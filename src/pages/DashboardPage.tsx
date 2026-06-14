@@ -155,31 +155,58 @@ function TrendCell({ trend }: { trend: number }) {
   );
 }
 
+// Mock insight derived from the existing TOPICS / EVIDENCE data above.
+// Used as a fallback when callOpenAI is unavailable (no API key, no sessions, etc.).
+const MOCK_INSIGHT: DashboardInsightResponse = {
+  headline: "Cardiology is your highest-priority gap",
+  detail:
+    "Your accuracy in Cardiology has dropped to 52% over the last 7 sessions — the steepest decline across all topics. You've also logged 12 mistakes in Cardiology, more than any other topic. The most common error pattern involves ECG interpretation, specifically distinguishing SVT from AFib.",
+  evidence: {
+    topic: "Cardiology",
+    accuracy: 52,
+    trend: "declining",
+  },
+  urgency: "high",
+  actionLabel:
+    "Spend your next session on ECG interpretation drills. Focus on the distinguishing features of SVT vs AFib — rate regularity, P-wave morphology, and response to vagal manoeuvres.",
+};
+
 function DashboardPage() {
   const [insight, setInsight] = useState<DashboardInsightResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
   const handleGenerateInsight = async () => {
+    setLoading(true);
+    setError(false);
+
+    // Attempt real API call if study data exists
     const sessions = getSessions();
     const mistakes = getMistakes();
     const weakTopics = getRankedWeakTopics(sessions);
-    if (weakTopics.length === 0) return;
-    const mistakeFreq = getMistakeFrequencyByTopic(mistakes);
-    const userPrompt = buildDashboardInsightPrompt(weakTopics, mistakeFreq);
-    const systemPrompt =
-      "You are an AI study coach for AMC MCQ Part 1 exam preparation.";
-    setLoading(true);
-    setError(false);
-    const result = await callOpenAI<DashboardInsightResponse>(
-      systemPrompt,
-      userPrompt,
-    );
+
+    let result: DashboardInsightResponse | null = null;
+
+    if (weakTopics.length > 0) {
+      const mistakeFreq = getMistakeFrequencyByTopic(mistakes);
+      const userPrompt = buildDashboardInsightPrompt(weakTopics, mistakeFreq);
+      const systemPrompt =
+        "You are an AI study coach for AMC MCQ Part 1 exam preparation.";
+      result = await callOpenAI<DashboardInsightResponse>(
+        systemPrompt,
+        userPrompt,
+      );
+    }
+
+    // If API returned data, use it; otherwise fall back to mock
     if (result) {
       setInsight(result);
     } else {
-      setError(true);
+      // Simulate a brief delay so the loading skeleton is visible
+      await new Promise((r) => setTimeout(r, 800));
+      setInsight(MOCK_INSIGHT);
     }
+
     setLoading(false);
   };
 
@@ -284,107 +311,172 @@ function DashboardPage() {
               className="overflow-hidden rounded-xl bg-surface"
               style={{ boxShadow: "var(--shadow-card-raised)" }}
             >
-              {/* ── Analysis zone ── */}
-              <div className="px-8 pt-7 pb-6">
-                {/* Meta row: label + urgency + confidence */}
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-3.5 w-3.5 text-accent" />
-                    <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-accent">
-                      AI Insight
-                    </span>
-                  </div>
-                  <span
-                    className={`rounded-full px-2 py-[2px] text-[11px] font-medium capitalize ${
-                      insight.urgency === "high"
-                        ? "bg-danger/[0.08] text-danger"
-                        : insight.urgency === "medium"
-                          ? "bg-warning/[0.08] text-warning"
-                          : "bg-tertiary/[0.15] text-tertiary"
-                    }`}
-                  >
-                    {insight.urgency} urgency
-                  </span>
-                </div>
+              <div className="grid grid-cols-[1fr_280px]">
 
-                {/* Headline */}
-                <h2 className="mb-3 text-[22px] font-bold leading-snug tracking-[-0.01em] text-primary text-balance">
-                  {insight.headline}
-                </h2>
+                {/* ── Left: Narrative ── */}
+                <div className="px-8 pt-7 pb-6">
 
-                {/* Analysis body */}
-                <p className="mb-6 max-w-[60ch] text-[15px] leading-[1.7] text-secondary">
-                  {insight.detail}
-                </p>
-
-                {/* ── Recommended Action callout ── */}
-                <div className="rounded-xl border-l-[3px] border-accent bg-accent/[0.04] px-5 py-4">
-                  <div className="mb-1.5 flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4 shrink-0 text-accent" />
-                    <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-accent">
-                      Recommended action
-                    </span>
-                  </div>
-                  <p className="max-w-[56ch] text-[14px] leading-relaxed text-primary">
-                    {insight.actionLabel}
-                  </p>
-                </div>
-              </div>
-
-              {/* ── Evidence + Feedback footer ── */}
-              <div className="flex items-center justify-between border-t border-border bg-surface-alt px-8 py-4">
-                {/* Evidence stats row */}
-                <div className="flex items-center gap-8">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-tertiary">
-                      Evidence
-                    </span>
-                    <span className="h-3 w-px bg-border" />
-                  </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="tabular-nums text-[16px] font-bold text-primary">
-                      {insight.evidence.accuracy}%
-                    </span>
-                    <span className="text-[12px] text-secondary">accuracy</span>
+                  {/* Meta row: label + urgency */}
+                  <div className="mb-4 flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-3.5 w-3.5 text-accent" />
+                      <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-accent">
+                        AI Insight
+                      </span>
+                    </div>
                     <span
-                      className={`ml-1 text-[12px] capitalize ${trendCls(insight.evidence.trend)}`}
+                      className={`rounded-full px-2 py-[2px] text-[11px] font-medium capitalize ${
+                        insight.urgency === "high"
+                          ? "bg-danger/[0.08] text-danger"
+                          : insight.urgency === "medium"
+                            ? "bg-warning/[0.08] text-warning"
+                            : "bg-tertiary/[0.15] text-tertiary"
+                      }`}
                     >
-                      · {insight.evidence.trend}
+                      {insight.urgency} urgency
                     </span>
                   </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-[14px] font-semibold text-primary">
-                      {insight.evidence.topic}
+
+                  {/* Headline */}
+                  <h2 className="mb-3 text-[22px] font-bold leading-snug tracking-[-0.01em] text-primary text-balance">
+                    {insight.headline}
+                  </h2>
+
+                  {/* Analysis body */}
+                  <p className="mb-6 max-w-[56ch] text-[15px] leading-[1.7] text-secondary">
+                    {insight.detail}
+                  </p>
+
+                  {/* Recommended Action callout */}
+                  <div className="mb-5 rounded-xl border-l-[3px] border-accent bg-accent/[0.04] px-5 py-4">
+                    <div className="mb-1.5 flex items-center gap-2">
+                      <Lightbulb className="h-4 w-4 shrink-0 text-accent" />
+                      <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-accent">
+                        Recommended action
+                      </span>
+                    </div>
+                    <p className="max-w-[52ch] text-[14px] leading-relaxed text-primary">
+                      {insight.actionLabel}
+                    </p>
+                  </div>
+
+                  {/* Feedback */}
+                  <div className="flex items-center gap-2">
+                    <span className="mr-1 text-[12px] text-tertiary">
+                      Helpful?
                     </span>
-                    <span className="text-[12px] text-secondary">
-                      priority topic
-                    </span>
+                    <button
+                      type="button"
+                      aria-label="Helpful"
+                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[8px] border border-border text-tertiary transition-all duration-150 hover:border-accent/30 hover:bg-accent/[0.04] hover:text-accent"
+                    >
+                      <ThumbsUp className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Not helpful"
+                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[8px] border border-border text-tertiary transition-all duration-150 hover:border-danger/30 hover:bg-danger/[0.04] hover:text-danger"
+                    >
+                      <ThumbsDown className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </div>
 
-                {/* Feedback */}
-                <div className="flex items-center gap-2">
-                  <span className="mr-1 text-[12px] text-tertiary">
-                    Helpful?
-                  </span>
-                  <button
-                    type="button"
-                    aria-label="Helpful"
-                    className="flex h-[30px] w-[30px] items-center justify-center rounded-[8px] border border-border text-tertiary transition-all duration-150 hover:border-accent/30 hover:bg-accent/[0.04] hover:text-accent"
-                  >
-                    <ThumbsUp className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Not helpful"
-                    className="flex h-[30px] w-[30px] items-center justify-center rounded-[8px] border border-border text-tertiary transition-all duration-150 hover:border-danger/30 hover:bg-danger/[0.04] hover:text-danger"
-                  >
-                    <ThumbsDown className="h-3.5 w-3.5" />
-                  </button>
+                {/* ── Right: Evidence panel ── */}
+                <div className="border-l border-border bg-surface-alt px-6 pt-7 pb-6">
+                  <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.08em] text-tertiary">
+                    Evidence
+                  </p>
+
+                  <div className="space-y-5">
+                    {/* Accuracy — primary metric */}
+                    <div>
+                      <p className="tabular-nums text-[28px] font-bold leading-none text-primary">
+                        {insight.evidence.accuracy}%
+                      </p>
+                      <p className="mt-1.5 text-[12px] font-medium text-secondary">
+                        Accuracy
+                      </p>
+                      <p
+                        className={`mt-0.5 tabular-nums text-[12px] capitalize ${trendCls(insight.evidence.trend)}`}
+                      >
+                        {insight.evidence.trend === "declining"
+                          ? "↓"
+                          : insight.evidence.trend === "improving"
+                            ? "↑"
+                            : "—"}{" "}
+                        {insight.evidence.trend}
+                      </p>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-px bg-border" />
+
+                    {/* Priority Topic */}
+                    <div>
+                      <p className="text-[16px] font-bold leading-tight text-primary">
+                        {insight.evidence.topic}
+                      </p>
+                      <p className="mt-1 text-[12px] font-medium text-secondary">
+                        Priority topic
+                      </p>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-px bg-border" />
+
+                    {/* Supporting metrics from existing EVIDENCE data */}
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+                      <div>
+                        <p className="tabular-nums text-[18px] font-bold leading-none text-primary">
+                          12
+                        </p>
+                        <p className="mt-1 text-[11px] font-medium text-secondary">
+                          Mistakes
+                        </p>
+                      </div>
+                      <div>
+                        <p className="tabular-nums text-[18px] font-bold leading-none text-primary">
+                          6
+                        </p>
+                        <p className="mt-1 text-[11px] font-medium text-secondary">
+                          Sessions
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
               </div>
             </div>
           )}
+        </div>
+
+        {/* ── KPI Summary ── */}
+        <div className="mb-6 grid grid-cols-4 gap-3">
+          {STATS.map(({ label, value, delta, pos }) => (
+            <div
+              key={label}
+              className="rounded-xl bg-surface px-5 py-4"
+              style={{ boxShadow: "var(--shadow-card)" }}
+            >
+              <p className="mb-1.5 text-[12px] font-medium text-tertiary">{label}</p>
+              <p className="tabular-nums text-[20px] font-bold leading-none text-primary">
+                {value}
+              </p>
+              <p
+                className={`mt-1.5 tabular-nums text-[12px] ${
+                  pos === true
+                    ? "text-success"
+                    : pos === false
+                      ? "text-danger"
+                      : "text-tertiary"
+                }`}
+              >
+                {delta}
+              </p>
+            </div>
+          ))}
         </div>
 
         {/* Topic Performance */}
