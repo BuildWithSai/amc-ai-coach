@@ -1,73 +1,164 @@
-# React + TypeScript + Vite
+# AMC AI Coach
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Live:** https://amc-ai-coach.vercel.app
 
-Currently, two official plugins are available:
+An AI-powered study analytics platform built for a doctor preparing for the Australian Medical Council (AMC) MCQ Part 1 exam.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## The User Story
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+My partner is preparing for the AMC MCQ Part 1 exam. She logs her study sessions and mistakes daily. The system computes her weak topics, mistake patterns, and performance trends. The AI explains why each topic is weak and what she should do about it. I iterated the recommendations using real feedback from her actual usage.
 
-## Expanding the ESLint configuration
+This is not a demo. It is a real tool used by a real person preparing for a high-stakes medical exam.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Architecture
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Raw Data → Computed Analytics → LLM Interpretation → UI
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Every AI insight is generated from pre-computed analytics, not raw session data. The LLM interprets results — it never performs calculations.
+src/
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+├── analytics/
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+│ └── computeAnalytics.ts ← pure functions, no LLM, testable independently
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+├── prompts/
+
+│ ├── dashboardInsight.ts
+
+│ ├── weakTopicAnalysis.ts
+
+│ ├── mistakePatternAnalysis.ts
+
+│ ├── recommendations.ts
+
+│ └── CHANGELOG.md ← prompt version history
+
+├── services/
+
+│ ├── openai.ts ← single typed wrapper, JSON mode enforced
+
+│ ├── storage.ts ← persistence abstraction, one-file Supabase swap
+
+│ └── aiFeedback.ts ← feedback logger
+
+├── types/
+
+│ ├── index.ts ← domain types + AMCTopic union
+
+│ └── aiResponses.ts ← typed AI response interfaces
+
+└── pages/
+
+├── DashboardPage.tsx
+
+├── StudySessionsPage.tsx
+
+├── MistakesPage.tsx
+
+└── AICoachPage.tsx
+
+---
+
+## Why Not Pass Raw Data to the LLM?
+
+The obvious approach is sending raw session data to GPT and asking it to find patterns. This fails in production because:
+
+- LLMs hallucinate calculations
+- Results are non-deterministic
+- You cannot unit test it
+- Cost scales with data size
+
+Instead, `computeAnalytics.ts` runs pure TypeScript functions before any API call. GPT receives a structured summary and interprets it. Every number in the AI response is computed in TypeScript first and echoed back as evidence in the UI.
+
+---
+
+## Key Engineering Decisions
+
+**Single storage abstraction**
+All localStorage reads and writes go through `storage.ts`. No component touches localStorage directly. In Phase 2, swapping localStorage for Supabase is a single-file change.
+
+**Single typed OpenAI wrapper**
+All API calls go through `callOpenAI<T>()`. JSON mode enforced on every call. To switch providers, change two lines in one file.
+
+**Evidence panel on every AI response**
+Every AI insight card shows the computed data that triggered it. The user can verify every number. This builds trust and makes the system debuggable.
+
+**User-initiated AI calls**
+No OpenAI call happens on page load. Every AI feature requires an explicit Generate button click. Cost is predictable and the AI feels intentional.
+
+**Prompt versioning**
+Every prompt change is logged in `src/prompts/CHANGELOG.md` with date and reason. This demonstrates that AI output quality must be measured and iterated.
+
+**AI feedback loop**
+Thumbs up/down on every insight. Feedback is stored in localStorage and summarised via `getFeedbackSummary()`. This is the mechanism for prompt iteration — a core AI engineering skill.
+
+---
+
+## API Security
+
+**Phase 1 (current):** The OpenAI API key lives in `VITE_OPENAI_API_KEY` and is visible in the browser bundle. This is a known, accepted tradeoff for a single-user portfolio MVP.
+
+**Phase 2 (planned):** OpenAI calls move to a Supabase Edge Function. The key lives in Supabase secrets. The frontend never touches it directly.
+Phase 1: Frontend → OpenAI API (key in browser)
+
+Phase 2: Frontend → Supabase Edge Function → OpenAI API (key in server secrets)
+
+---
+
+## Tech Stack
+
+| Layer       | Technology                       |
+| ----------- | -------------------------------- |
+| Frontend    | React + TypeScript + Vite        |
+| Styling     | Tailwind CSS                     |
+| LLM         | OpenAI API — GPT-4o, JSON mode   |
+| Persistence | localStorage (Phase 1)           |
+| Deployment  | Vercel                           |
+| Persistence | Supabase (Phase 2)               |
+| API Proxy   | Supabase Edge Function (Phase 2) |
+
+---
+
+## Roadmap
+
+**Phase 1 — Complete**
+
+- Study session and mistake logging
+- Computed analytics pipeline
+- AI insights with evidence panels
+- AI feedback system
+- Vercel deployment
+
+**Phase 2 — In Progress**
+
+- Supabase replaces localStorage
+- OpenAI calls move to Supabase Edge Function
+- Partner begins daily use with real data
+
+**Phase 3 — Planned**
+
+- RAG over AMC syllabus
+- Embeddings for mistake clustering
+- Performance trend predictions
+
+---
+
+## Known Limitations
+
+- Data is stored in localStorage — clearing the browser wipes all data (fixed in Phase 2)
+- API key is exposed in the browser bundle (fixed in Phase 2)
+- Desktop only — mobile layout is Phase 2
+- No authentication — single user only
+
+---
+
+## What I Would Build Next
+
+- FastAPI backend for server-side analytics
+- RAG pipeline over the AMC syllabus for question-specific guidance
+- Embeddings to cluster similar mistakes and surface hidden patterns
+- Spaced repetition system driven by mistake frequency data
