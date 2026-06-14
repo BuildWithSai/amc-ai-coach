@@ -312,10 +312,8 @@ function DashboardPage() {
               style={{ boxShadow: "var(--shadow-card-raised)" }}
             >
               <div className="grid grid-cols-[1fr_280px]">
-
                 {/* ── Left: Narrative ── */}
                 <div className="px-8 pt-7 pb-6">
-
                   {/* Meta row: label + urgency */}
                   <div className="mb-4 flex items-center gap-3">
                     <div className="flex items-center gap-2">
@@ -446,7 +444,6 @@ function DashboardPage() {
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
           )}
@@ -460,7 +457,9 @@ function DashboardPage() {
               className="rounded-xl bg-surface px-5 py-4"
               style={{ boxShadow: "var(--shadow-card)" }}
             >
-              <p className="mb-1.5 text-[12px] font-medium text-tertiary">{label}</p>
+              <p className="mb-1.5 text-[12px] font-medium text-tertiary">
+                {label}
+              </p>
               <p className="tabular-nums text-[20px] font-bold leading-none text-primary">
                 {value}
               </p>
