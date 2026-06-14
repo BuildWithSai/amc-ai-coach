@@ -185,14 +185,16 @@ function DashboardPage() {
               Dashboard
             </h1>
             <p className="mt-1.5 text-[15px] text-secondary">
-              24 sessions · last activity 2 days ago
+              {sessions.length === 0
+                ? "No sessions logged yet"
+                : `${sessions.length} sessions`}
             </p>
           </div>
           <Button
             type="button"
             className="mt-1"
             onClick={handleGenerateInsight}
-            disabled={loading}
+            disabled={loading || sessions.length === 0}
           >
             {loading ? "Generating…" : "Generate insight"}
           </Button>
