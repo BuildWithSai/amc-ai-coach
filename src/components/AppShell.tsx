@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   Sparkles,
   BarChart3,
+  Stethoscope,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -32,14 +33,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="fixed inset-0 flex overflow-hidden bg-[#F5F5F7]">
       <aside className="flex h-full w-64 shrink-0 flex-col border-r border-black/[0.07] bg-white">
-
         {/* Brand */}
         <div className="flex items-center gap-3 px-5 py-5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0A84FF] to-[#0060D0] text-[13px] font-bold text-white shadow-[0_1px_4px_rgba(10,132,255,0.45)]">
-            A
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#0A84FF]">
+            <Stethoscope className="h-4 w-4 text-white" />
           </div>
           <span className="text-[15px] font-semibold tracking-[-0.01em] text-gray-900">
-            AMC Coach
+            AMC AI Coach
           </span>
         </div>
 
@@ -109,7 +109,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </div>
-
       </aside>
 
       <main className="flex-1 overflow-y-auto">{children}</main>

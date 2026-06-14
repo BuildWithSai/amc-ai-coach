@@ -19,11 +19,24 @@ import { buildDashboardInsightPrompt } from "../prompts/dashboardInsight";
 import { callOpenAI } from "../services/openai";
 import type { DashboardInsightResponse } from "../types/aiResponses";
 
-type StatItem = { label: string; value: string; delta: string; pos: boolean | null };
-type TopicRow = { topic: string; acc: number; trend: number; mistakes: number; lastStudied: string };
+type StatItem = {
+  label: string;
+  value: string;
+  delta: string;
+  pos: boolean | null;
+};
+type TopicRow = {
+  topic: string;
+  acc: number;
+  trend: number;
+  mistakes: number;
+  lastStudied: string;
+};
 
 function relativeTime(isoDate: string): string {
-  const days = Math.floor((Date.now() - new Date(isoDate).getTime()) / 86_400_000);
+  const days = Math.floor(
+    (Date.now() - new Date(isoDate).getTime()) / 86_400_000,
+  );
   if (days === 0) return "Today";
   if (days === 1) return "1d ago";
   return `${days}d ago`;
@@ -55,8 +68,7 @@ function TrendCell({ trend }: { trend: number }) {
   if (trend > 0)
     return (
       <span className="flex items-center gap-1 tabular-nums text-[13px] text-success">
-        <TrendingUp className="h-3.5 w-3.5 shrink-0" />
-        +{trend}%
+        <TrendingUp className="h-3.5 w-3.5 shrink-0" />+{trend}%
       </span>
     );
   return (
@@ -80,8 +92,10 @@ function DashboardPage() {
   const avgAccuracy =
     sessions.length > 0
       ? Math.round(
-          sessions.reduce((sum, s) => sum + (s.correct / s.attempted) * 100, 0) /
-            sessions.length,
+          sessions.reduce(
+            (sum, s) => sum + (s.correct / s.attempted) * 100,
+            0,
+          ) / sessions.length,
         )
       : 0;
 
@@ -98,15 +112,29 @@ function DashboardPage() {
       delta: "—",
       pos: null,
     },
-    { label: "Mistakes logged", value: String(mistakes.length), delta: "—", pos: null },
-    { label: "Study sessions", value: String(sessions.length), delta: "—", pos: null },
+    {
+      label: "Mistakes logged",
+      value: String(mistakes.length),
+      delta: "—",
+      pos: null,
+    },
+    {
+      label: "Study sessions",
+      value: String(sessions.length),
+      delta: "—",
+      pos: null,
+    },
   ];
 
   const TOPICS: TopicRow[] = weakTopics.map((t) => {
-    const topicMistakes = mistakeFreq.find((m) => m.topic === t.topic)?.count ?? 0;
+    const topicMistakes =
+      mistakeFreq.find((m) => m.topic === t.topic)?.count ?? 0;
     const latestSession = sessions
       .filter((s) => s.topic === t.topic)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )[0];
     return {
       topic: t.topic,
       acc: t.averageAccuracy,
@@ -119,10 +147,14 @@ function DashboardPage() {
   const handleGenerateInsight = async () => {
     if (weakTopics.length === 0) return;
     const userPrompt = buildDashboardInsightPrompt(weakTopics, mistakeFreq);
-    const systemPrompt = "You are an AI study coach for AMC MCQ Part 1 exam preparation.";
+    const systemPrompt =
+      "You are an AI study coach for AMC MCQ Part 1 exam preparation.";
     setLoading(true);
     setError(false);
-    const result = await callOpenAI<DashboardInsightResponse>(systemPrompt, userPrompt);
+    const result = await callOpenAI<DashboardInsightResponse>(
+      systemPrompt,
+      userPrompt,
+    );
     if (result) {
       setInsight(result);
     } else {
@@ -132,19 +164,24 @@ function DashboardPage() {
   };
 
   const trendCls = (trend: DashboardInsightResponse["evidence"]["trend"]) =>
-    trend === "declining" ? "text-danger"
-    : trend === "improving" ? "text-success"
-    : "text-tertiary";
+    trend === "declining"
+      ? "text-danger"
+      : trend === "improving"
+        ? "text-success"
+        : "text-tertiary";
 
   return (
     <AppShell>
       <div className="mx-auto w-4/5 px-6 py-8">
-
         {/* Header */}
         <div className="mb-8 flex items-start justify-between">
           <div>
-            <h1 className="text-[30px] font-bold tracking-tight text-gray-900">Dashboard</h1>
-            <p className="mt-1.5 text-[15px] text-secondary">24 sessions · last activity 2 days ago</p>
+            <h1 className="text-[30px] font-bold tracking-tight text-gray-900">
+              Dashboard
+            </h1>
+            <p className="mt-1.5 text-[15px] text-secondary">
+              24 sessions · last activity 2 days ago
+            </p>
           </div>
           <Button
             type="button"
@@ -165,12 +202,21 @@ function DashboardPage() {
             {/* Stats */}
             <div className="mb-6 grid grid-cols-4 gap-4">
               {STATS.map(({ label, value, delta, pos }) => (
-                <div key={label} className="rounded-xl border border-black/10 bg-white p-5">
+                <div
+                  key={label}
+                  className="rounded-xl border border-black/10 bg-white p-5"
+                >
                   <p className="mb-2 text-[13px] text-secondary">{label}</p>
-                  <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">{value}</p>
+                  <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
+                    {value}
+                  </p>
                   <p
                     className={`mt-2 tabular-nums text-[13px] ${
-                      pos === true ? "text-success" : pos === false ? "text-danger" : "text-tertiary"
+                      pos === true
+                        ? "text-success"
+                        : pos === false
+                          ? "text-danger"
+                          : "text-tertiary"
                     }`}
                   >
                     {delta}
@@ -192,7 +238,6 @@ function DashboardPage() {
             {insight && !error && (
               <div className="mb-6 rounded-xl border border-black/10 bg-white">
                 <div className="grid grid-cols-[1fr_308px]">
-
                   {/* Left: insight + action */}
                   <div className="border-r border-black/5 p-6">
                     <h2 className="mb-3 text-[20px] font-semibold leading-snug text-balance text-gray-900">
@@ -205,7 +250,9 @@ function DashboardPage() {
                     <div className="mb-6 rounded-xl bg-accent-soft p-4">
                       <div className="mb-2 flex items-center gap-2">
                         <Lightbulb className="h-4 w-4 shrink-0 text-accent" />
-                        <span className="text-[13px] font-semibold text-accent">Recommended action</span>
+                        <span className="text-[13px] font-semibold text-accent">
+                          Recommended action
+                        </span>
                       </div>
                       <p className="text-[14px] leading-relaxed text-gray-800">
                         {insight.actionLabel}
@@ -233,25 +280,72 @@ function DashboardPage() {
 
                   {/* Right: Evidence */}
                   <div className="p-6">
-                    <p className="mb-4 text-[13px] font-medium text-secondary">Evidence</p>
+                    <p className="mb-4 text-[13px] font-medium text-secondary">
+                      Evidence
+                    </p>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-6">
                       <div>
                         <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
                           {insight.evidence.accuracy}%
                         </p>
-                        <p className="mt-2 text-[13px] text-secondary">Accuracy</p>
-                        <p className={`mt-1 text-[12px] capitalize ${trendCls(insight.evidence.trend)}`}>
+                        <p className="mt-2 text-[13px] text-secondary">
+                          Accuracy
+                        </p>
+                        <p
+                          className={`mt-1 text-[12px] capitalize ${trendCls(insight.evidence.trend)}`}
+                        >
                           {insight.evidence.trend}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
+                          {mistakeFreq.find(
+                            (m) => m.topic === insight.evidence.topic,
+                          )?.count ?? 0}
+                        </p>
+                        <p className="mt-2 text-[13px] text-secondary">
+                          Mistakes
+                        </p>
+                        <p className="mt-1 text-[12px] text-tertiary">
+                          mistakes logged
+                        </p>
+                      </div>
+                      <div>
+                        <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
+                          {
+                            sessions.filter(
+                              (s) => s.topic === insight.evidence.topic,
+                            ).length
+                          }
+                        </p>
+                        <p className="mt-2 text-[13px] text-secondary">
+                          Sessions
+                        </p>
+                        <p className="mt-1 text-[12px] text-tertiary">
+                          sessions logged
                         </p>
                       </div>
                       <div>
                         <p className="text-[18px] font-bold leading-tight text-gray-900 line-clamp-2">
                           {insight.evidence.topic}
                         </p>
-                        <p className="mt-2 text-[13px] text-secondary">Priority topic</p>
+                        <p className="mt-2 text-[13px] text-secondary">
+                          Top pattern
+                        </p>
+                        <p className="mt-1 text-[12px] text-tertiary">
+                          priority topic
+                        </p>
                       </div>
                     </div>
-                    <p className="mt-6 text-right text-[12px] capitalize text-tertiary">
+                    <p
+                      className={`mt-6 text-right text-[12px] font-medium capitalize ${
+                        insight.urgency === "high"
+                          ? "text-danger"
+                          : insight.urgency === "medium"
+                            ? "text-warning"
+                            : "text-success"
+                      }`}
+                    >
                       Urgency: {insight.urgency}
                     </p>
                   </div>
@@ -262,14 +356,26 @@ function DashboardPage() {
             {/* Topic Performance */}
             <div className="overflow-hidden rounded-xl border border-black/10 bg-white">
               <div className="flex items-center justify-between border-b border-black/10 px-6 py-4">
-                <h2 className="text-[17px] font-semibold text-gray-900">Topic Performance</h2>
-                <span className="text-[13px] text-secondary">{TOPICS.length} topics · sorted by accuracy</span>
+                <h2 className="text-[17px] font-semibold text-gray-900">
+                  Topic Performance
+                </h2>
+                <span className="text-[13px] text-secondary">
+                  {TOPICS.length} topics · sorted by accuracy
+                </span>
               </div>
 
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-black/5">
-                    {(["Topic", "Accuracy", "Trend", "Mistakes", "Last studied"] as const).map((h) => (
+                    {(
+                      [
+                        "Topic",
+                        "Accuracy",
+                        "Trend",
+                        "Mistakes",
+                        "Last studied",
+                      ] as const
+                    ).map((h) => (
                       <th
                         key={h}
                         className="px-6 py-3 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-secondary"
@@ -282,11 +388,21 @@ function DashboardPage() {
                 <tbody className="divide-y divide-black/5">
                   {TOPICS.map((row) => (
                     <tr key={row.topic}>
-                      <td className="px-6 py-3.5 text-[14px] font-medium text-gray-900">{row.topic}</td>
-                      <td className="px-6 py-3.5"><AccBar acc={row.acc} /></td>
-                      <td className="px-6 py-3.5"><TrendCell trend={row.trend} /></td>
-                      <td className="px-6 py-3.5 tabular-nums text-[14px] text-gray-900">{row.mistakes}</td>
-                      <td className="px-6 py-3.5 text-[13px] text-secondary">{row.lastStudied}</td>
+                      <td className="px-6 py-3.5 text-[14px] font-medium text-gray-900">
+                        {row.topic}
+                      </td>
+                      <td className="px-6 py-3.5">
+                        <AccBar acc={row.acc} />
+                      </td>
+                      <td className="px-6 py-3.5">
+                        <TrendCell trend={row.trend} />
+                      </td>
+                      <td className="px-6 py-3.5 tabular-nums text-[14px] text-gray-900">
+                        {row.mistakes}
+                      </td>
+                      <td className="px-6 py-3.5 text-[13px] text-secondary">
+                        {row.lastStudied}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -294,7 +410,6 @@ function DashboardPage() {
             </div>
           </>
         )}
-
       </div>
     </AppShell>
   );
