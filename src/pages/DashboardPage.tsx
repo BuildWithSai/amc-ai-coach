@@ -18,6 +18,7 @@ import {
 import { buildDashboardInsightPrompt } from "../prompts/dashboardInsight";
 import { callOpenAI } from "../services/openai";
 import type { DashboardInsightResponse } from "../types/aiResponses";
+import { saveAIFeedback } from "../services/aiFeedback";
 
 type StatItem = {
   label: string;
@@ -83,6 +84,9 @@ function DashboardPage() {
   const [insight, setInsight] = useState<DashboardInsightResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [feedbackGiven, setFeedbackGiven] = useState<
+    "helpful" | "not_helpful" | null
+  >(null);
 
   const sessions = getSessions();
   const mistakes = getMistakes();
@@ -151,6 +155,7 @@ function DashboardPage() {
       "You are an AI study coach for AMC MCQ Part 1 exam preparation.";
     setLoading(true);
     setError(false);
+    setFeedbackGiven(null);
     const result = await callOpenAI<DashboardInsightResponse>(
       systemPrompt,
       userPrompt,
@@ -264,14 +269,44 @@ function DashboardPage() {
                       <button
                         type="button"
                         aria-label="Helpful"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-secondary transition-all duration-150 hover:bg-gray-200"
+                        disabled={feedbackGiven !== null}
+                        onClick={() => {
+                          saveAIFeedback({
+                            insightType: "dashboard_insight",
+                            timestamp: new Date().toISOString(),
+                            rating: "helpful",
+                          });
+                          setFeedbackGiven("helpful");
+                        }}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ${
+                          feedbackGiven === "helpful"
+                            ? "bg-blue-100 text-blue-600"
+                            : feedbackGiven !== null
+                              ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                              : "bg-gray-100 text-secondary hover:bg-gray-200"
+                        }`}
                       >
                         <ThumbsUp className="h-4 w-4" />
                       </button>
                       <button
                         type="button"
                         aria-label="Not helpful"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-secondary transition-all duration-150 hover:bg-gray-200"
+                        disabled={feedbackGiven !== null}
+                        onClick={() => {
+                          saveAIFeedback({
+                            insightType: "dashboard_insight",
+                            timestamp: new Date().toISOString(),
+                            rating: "not_helpful",
+                          });
+                          setFeedbackGiven("not_helpful");
+                        }}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ${
+                          feedbackGiven === "not_helpful"
+                            ? "bg-red-100 text-red-500"
+                            : feedbackGiven !== null
+                              ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                              : "bg-gray-100 text-secondary hover:bg-gray-200"
+                        }`}
                       >
                         <ThumbsDown className="h-4 w-4" />
                       </button>
