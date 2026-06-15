@@ -9,7 +9,9 @@ import {
   Stethoscope,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
+import { supabase } from "../services/supabase";
 import type { ReactNode } from "react";
 
 const NAV_GROUPS = [
@@ -33,15 +35,23 @@ const NAV_GROUPS = [
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUserEmail(data.user?.email ?? null);
+    });
+  }, []);
 
   const closeSidebar = () => setMobileOpen(false);
 
   // Close sidebar on any route change — handles same-page taps and browser back/forward
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   return (
     <div className="fixed inset-0 flex overflow-hidden bg-[#F5F5F7]">
-
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
@@ -138,16 +148,24 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="border-t border-black/[0.07] p-3">
           <div className="flex items-center gap-3 rounded-[8px] px-3 py-2.5">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1C1C1E] text-[11px] font-bold text-white">
-              L
+              {userEmail ? userEmail[0].toUpperCase() : "?"}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13.5px] font-semibold leading-tight text-gray-900">
-                Dr. Lavanya
+                {userEmail ? userEmail.split("@")[0] : "—"}
               </p>
               <p className="mt-[3px] truncate text-[11.5px] leading-tight text-[#86868B]">
                 AMC MCQ Part 1
               </p>
             </div>
+            <button
+              type="button"
+              aria-label="Sign out"
+              onClick={() => supabase.auth.signOut()}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#86868B] transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
       </aside>
@@ -155,7 +173,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Main */}
       <main className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile header — hidden on md+ */}
-        <div className="flex shrink-0 items-center gap-3 border-b border-black/[0.07] bg-white px-4 py-3 md:hidden" style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}>
+        <div
+          className="flex shrink-0 items-center gap-3 border-b border-black/[0.07] bg-white px-4 py-3 md:hidden"
+          style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}
+        >
           <button
             type="button"
             aria-label="Open navigation"
@@ -170,9 +191,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </span>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto">{children}</div>
       </main>
     </div>
   );
