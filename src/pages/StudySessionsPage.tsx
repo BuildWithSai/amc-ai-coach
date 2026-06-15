@@ -61,7 +61,7 @@ function StudySessionsPage() {
       attempted: Number(attempted),
       correct: Number(correct),
       incorrect: Number(incorrect),
-      notes: notes || null,
+      notes: notes || undefined,
     };
     await saveSession(newSession);
     setSessions(await getSessions());

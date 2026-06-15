@@ -10,7 +10,15 @@ export async function getSessions(): Promise<StudySession[]> {
     console.error("getSessions error:", error);
     return [];
   }
-  return data as StudySession[];
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    topic: row.topic,
+    attempted: row.attempted,
+    correct: row.correct,
+    incorrect: row.incorrect,
+    notes: row.notes,
+    createdAt: row.created_at,
+  })) as StudySession[];
 }
 
 export async function saveSession(session: StudySession): Promise<void> {
@@ -21,7 +29,7 @@ export async function saveSession(session: StudySession): Promise<void> {
     correct: session.correct,
     incorrect: session.incorrect,
     notes: session.notes,
-    created_at: session.created_at,
+    created_at: session.createdAt,
   });
   if (error) console.error("saveSession error:", error);
 }
@@ -35,17 +43,24 @@ export async function getMistakes(): Promise<Mistake[]> {
     console.error("getMistakes error:", error);
     return [];
   }
-  return data as Mistake[];
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    topic: row.topic,
+    questionSummary: row.question_summary,
+    whyWrong: row.why_wrong,
+    correctConcept: row.correct_concept,
+    createdAt: row.created_at,
+  })) as Mistake[];
 }
 
 export async function saveMistake(mistake: Mistake): Promise<void> {
   const { error } = await supabase.from("mistakes").insert({
     id: mistake.id,
     topic: mistake.topic,
-    question_summary: mistake.question_summary,
-    why_wrong: mistake.why_wrong,
-    correct_concept: mistake.correct_concept,
-    created_at: mistake.created_at,
+    question_summary: mistake.questionSummary,
+    why_wrong: mistake.whyWrong,
+    correct_concept: mistake.correctConcept,
+    created_at: mistake.createdAt,
   });
   if (error) console.error("saveMistake error:", error);
 }

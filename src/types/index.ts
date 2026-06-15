@@ -22,7 +22,7 @@ export interface StudySession {
   attempted: number;
   correct: number;
   incorrect: number;
-  notes: string;
+  notes?: string;
 }
 
 export interface Mistake {
