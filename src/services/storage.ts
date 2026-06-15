@@ -1,26 +1,51 @@
 import type { StudySession, Mistake } from "../types";
+import { supabase } from "./supabase";
 
-const SESSIONS_KEY = "amc_sessions";
-const MISTAKES_KEY = "amc_mistakes";
-
-export function getSessions(): StudySession[] {
-  const raw = localStorage.getItem(SESSIONS_KEY);
-  if (!raw) return [];
-  return JSON.parse(raw) as StudySession[];
+export async function getSessions(): Promise<StudySession[]> {
+  const { data, error } = await supabase
+    .from("study_sessions")
+    .select("*")
+    .order("created_at", { ascending: true });
+  if (error) {
+    console.error("getSessions error:", error);
+    return [];
+  }
+  return data as StudySession[];
 }
 
-export function saveSession(session: StudySession): void {
-  const existing = getSessions();
-  localStorage.setItem(SESSIONS_KEY, JSON.stringify([...existing, session]));
+export async function saveSession(session: StudySession): Promise<void> {
+  const { error } = await supabase.from("study_sessions").insert({
+    id: session.id,
+    topic: session.topic,
+    attempted: session.attempted,
+    correct: session.correct,
+    incorrect: session.incorrect,
+    notes: session.notes,
+    created_at: session.created_at,
+  });
+  if (error) console.error("saveSession error:", error);
 }
 
-export function getMistakes(): Mistake[] {
-  const raw = localStorage.getItem(MISTAKES_KEY);
-  if (!raw) return [];
-  return JSON.parse(raw) as Mistake[];
+export async function getMistakes(): Promise<Mistake[]> {
+  const { data, error } = await supabase
+    .from("mistakes")
+    .select("*")
+    .order("created_at", { ascending: true });
+  if (error) {
+    console.error("getMistakes error:", error);
+    return [];
+  }
+  return data as Mistake[];
 }
 
-export function saveMistake(mistake: Mistake): void {
-  const existing = getMistakes();
-  localStorage.setItem(MISTAKES_KEY, JSON.stringify([...existing, mistake]));
+export async function saveMistake(mistake: Mistake): Promise<void> {
+  const { error } = await supabase.from("mistakes").insert({
+    id: mistake.id,
+    topic: mistake.topic,
+    question_summary: mistake.question_summary,
+    why_wrong: mistake.why_wrong,
+    correct_concept: mistake.correct_concept,
+    created_at: mistake.created_at,
+  });
+  if (error) console.error("saveMistake error:", error);
 }

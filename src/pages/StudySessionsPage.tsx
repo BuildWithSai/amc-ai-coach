@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import type { StudySession, AMCTopic } from "../types";
 import { getSessions, saveSession } from "../services/storage";
@@ -39,11 +39,15 @@ function StudySessionsPage() {
   const [correct, setCorrect] = useState("");
   const [incorrect, setIncorrect] = useState("");
   const [notes, setNotes] = useState("");
-  const [sessions, setSessions] = useState<StudySession[]>(getSessions);
+  const [sessions, setSessions] = useState<StudySession[]>([]);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+
+  useEffect(() => {
+    getSessions().then(setSessions);
+  }, []);
   const [validationError, setValidationError] = useState("");
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (Number(correct) + Number(incorrect) !== Number(attempted)) {
       setValidationError("Correct + Incorrect must equal Attempted.");
@@ -57,10 +61,10 @@ function StudySessionsPage() {
       attempted: Number(attempted),
       correct: Number(correct),
       incorrect: Number(incorrect),
-      notes,
+      notes: notes || null,
     };
-    saveSession(newSession);
-    setSessions(getSessions());
+    await saveSession(newSession);
+    setSessions(await getSessions());
     setAttempted("");
     setCorrect("");
     setIncorrect("");

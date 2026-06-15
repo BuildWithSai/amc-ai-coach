@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TrendingDown,
   TrendingUp,
@@ -10,6 +10,7 @@ import {
 import { AppShell } from "../components/AppShell";
 import { Button } from "../components/Button";
 import { getSessions, getMistakes } from "../services/storage";
+import type { StudySession, Mistake } from "../types";
 import {
   getRankedWeakTopics,
   getMistakeFrequencyByTopic,
@@ -88,8 +89,13 @@ function DashboardPage() {
     "helpful" | "not_helpful" | null
   >(null);
 
-  const sessions = getSessions();
-  const mistakes = getMistakes();
+  const [sessions, setSessions] = useState<StudySession[]>([]);
+  const [mistakes, setMistakes] = useState<Mistake[]>([]);
+
+  useEffect(() => {
+    getSessions().then(setSessions);
+    getMistakes().then(setMistakes);
+  }, []);
   const weakTopics = getRankedWeakTopics(sessions);
   const mistakeFreq = getMistakeFrequencyByTopic(mistakes);
 

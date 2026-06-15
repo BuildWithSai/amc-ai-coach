@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import type { Mistake, AMCTopic } from "../types";
 import { getMistakes, saveMistake } from "../services/storage";
@@ -35,10 +35,14 @@ function MistakesPage() {
   const [questionSummary, setQuestionSummary] = useState("");
   const [whyWrong, setWhyWrong] = useState("");
   const [correctConcept, setCorrectConcept] = useState("");
-  const [mistakes, setMistakes] = useState<Mistake[]>(getMistakes);
+  const [mistakes, setMistakes] = useState<Mistake[]>([]);
   const [validationError, setValidationError] = useState("");
 
-  const handleSaveMistake = (e: React.FormEvent) => {
+  useEffect(() => {
+    getMistakes().then(setMistakes);
+  }, []);
+
+  const handleSaveMistake = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!questionSummary || !whyWrong || !correctConcept) {
       setValidationError("Please fill in all required fields.");
@@ -53,8 +57,8 @@ function MistakesPage() {
       whyWrong,
       correctConcept,
     };
-    saveMistake(newMistake);
-    setMistakes(getMistakes());
+    await saveMistake(newMistake);
+    setMistakes(await getMistakes());
     setQuestionSummary("");
     setWhyWrong("");
     setCorrectConcept("");

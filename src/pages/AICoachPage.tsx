@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
 import { getSessions, getMistakes } from "../services/storage";
+import type { StudySession, Mistake } from "../types";
 import {
   getRankedWeakTopics,
   getMistakeFrequencyByTopic,
@@ -19,8 +20,14 @@ import { Button } from "../components/Button";
 import { SectionTitle } from "../components/SectionTitle";
 
 function AICoachPage() {
-  const sessions = getSessions();
-  const mistakes = getMistakes();
+  const [sessions, setSessions] = useState<StudySession[]>([]);
+  const [mistakes, setMistakes] = useState<Mistake[]>([]);
+
+  useEffect(() => {
+    getSessions().then(setSessions);
+    getMistakes().then(setMistakes);
+  }, []);
+
   const weakTopics = getRankedWeakTopics(sessions);
   const mistakeFrequency = getMistakeFrequencyByTopic(mistakes);
 
