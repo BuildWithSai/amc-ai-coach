@@ -1,3 +1,8 @@
+/**
+ * Form to log a study session (topic, attempted, correct, incorrect, notes).
+ * Validates that correct + incorrect === attempted before saving. Writes to Supabase
+ * and refetches the full list so the table stays in sync.
+ */
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import type { StudySession, AMCTopic } from "../types";

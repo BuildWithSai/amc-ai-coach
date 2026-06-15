@@ -1,3 +1,7 @@
+/**
+ * Form to log a mistake: topic, question summary, why it was wrong, correct concept.
+ * All three text fields are required. Writes to Supabase and refetches the list on submit.
+ */
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import type { Mistake, AMCTopic } from "../types";

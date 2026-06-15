@@ -1,3 +1,8 @@
+/**
+ * Three on-demand AI analysis panels: weak topic ranking, mistake pattern detection,
+ * and prioritised study recommendations. Each panel triggers its own OpenAI call
+ * independently. Sessions and mistakes are fetched from Supabase on mount.
+ */
 import { useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
 import { getSessions, getMistakes } from "../services/storage";

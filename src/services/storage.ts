@@ -1,3 +1,8 @@
+/**
+ * Reads and writes study sessions and mistakes to Supabase.
+ * Maps camelCase TS fields to snake_case DB columns on write, and back on read.
+ * Errors are logged to the console; functions never throw to the caller.
+ */
 import type { StudySession, Mistake } from "../types";
 import { supabase } from "./supabase";
 

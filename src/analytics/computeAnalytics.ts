@@ -1,5 +1,8 @@
-// computeAnalytics.ts — pure functions only. No API calls, no side effects.
-// These run BEFORE any AI call. The LLM interprets these results, never raw data.
+/**
+ * Pure functions that derive analytics from raw session and mistake data.
+ * No API calls, no side effects. These run before any AI call — the prompts
+ * pass the computed results, not the raw records.
+ */
 
 import type {
   StudySession,

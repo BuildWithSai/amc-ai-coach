@@ -1,5 +1,8 @@
-// openai.ts — the ONLY file that makes API calls to OpenAI.
-// Swap base URL and model here to switch to Ollama or any other provider.
+/**
+ * The only file that calls the OpenAI API.
+ * Uses JSON mode so the model always returns valid JSON. Swap BASE_URL and MODEL
+ * here to point at a different provider. Returns null on any error.
+ */
 
 const BASE_URL = 'https://api.openai.com/v1/chat/completions'
 const MODEL = 'gpt-4o'

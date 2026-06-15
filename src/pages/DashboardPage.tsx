@@ -1,3 +1,8 @@
+/**
+ * Summary view showing accuracy stats, question totals, and a topic performance table
+ * sorted by weakest accuracy first. The "Generate insight" button calls OpenAI with
+ * the computed analytics and renders a coaching brief with evidence.
+ */
 import { useState, useEffect } from "react";
 import {
   TrendingDown,
