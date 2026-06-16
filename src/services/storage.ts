@@ -10,7 +10,8 @@ export async function getSessions(): Promise<StudySession[]> {
   const { data, error } = await supabase
     .from("study_sessions")
     .select("*")
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "");
   if (error) {
     console.error("getSessions error:", error);
     return [];
@@ -35,6 +36,7 @@ export async function saveSession(session: StudySession): Promise<void> {
     incorrect: session.incorrect,
     notes: session.notes,
     created_at: session.createdAt,
+    user_id: (await supabase.auth.getUser()).data.user?.id,
   });
   if (error) console.error("saveSession error:", error);
 }
@@ -43,7 +45,8 @@ export async function getMistakes(): Promise<Mistake[]> {
   const { data, error } = await supabase
     .from("mistakes")
     .select("*")
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "");
   if (error) {
     console.error("getMistakes error:", error);
     return [];
@@ -66,6 +69,7 @@ export async function saveMistake(mistake: Mistake): Promise<void> {
     why_wrong: mistake.whyWrong,
     correct_concept: mistake.correctConcept,
     created_at: mistake.createdAt,
+    user_id: (await supabase.auth.getUser()).data.user?.id,
   });
   if (error) console.error("saveMistake error:", error);
 }
