@@ -86,6 +86,33 @@ function TrendCell({ trend }: { trend: number }) {
   );
 }
 
+function splitByWeek<T>(items: T[], getDate: (item: T) => string) {
+  const now = Date.now();
+  const thisWeek: T[] = [];
+  const lastWeek: T[] = [];
+  for (const item of items) {
+    const age = now - new Date(getDate(item)).getTime();
+    if (age < 7 * 86_400_000) thisWeek.push(item);
+    else if (age < 14 * 86_400_000) lastWeek.push(item);
+  }
+  return { thisWeek, lastWeek };
+}
+
+function weekDeltaText(
+  delta: number,
+  hasData: boolean,
+  unit = "",
+  invert = false,
+): { text: string; pos: boolean | null } {
+  if (!hasData) return { text: "Not enough data yet", pos: null };
+  if (delta === 0) return { text: "No change vs last week", pos: null };
+  const positive = invert ? delta < 0 : delta > 0;
+  return {
+    text: `${delta > 0 ? "+" : ""}${delta}${unit} vs last week`,
+    pos: positive,
+  };
+}
+
 function DashboardPage() {
   const [insight, setInsight] = useState<DashboardInsightResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -104,6 +131,43 @@ function DashboardPage() {
   const weakTopics = getRankedWeakTopics(sessions);
   const mistakeFreq = getMistakeFrequencyByTopic(mistakes);
 
+  const { thisWeek: sessThisWeek, lastWeek: sessLastWeek } = splitByWeek(
+    sessions,
+    (s) => s.createdAt,
+  );
+  const { thisWeek: mistThisWeek, lastWeek: mistLastWeek } = splitByWeek(
+    mistakes,
+    (m) => m.createdAt,
+  );
+
+  const sessHasData = sessThisWeek.length > 0 && sessLastWeek.length > 0;
+  const mistHasData = mistThisWeek.length > 0 || mistLastWeek.length > 0;
+
+  const avgAcc = (ss: StudySession[]) =>
+    ss.reduce((sum, s) => sum + (s.correct / s.attempted) * 100, 0) / ss.length;
+  const accDelta = weekDeltaText(
+    sessHasData ? Math.round(avgAcc(sessThisWeek) - avgAcc(sessLastWeek)) : 0,
+    sessHasData,
+    "%",
+  );
+  const qDelta = weekDeltaText(
+    sessHasData
+      ? sessThisWeek.reduce((n, s) => n + s.attempted, 0) -
+          sessLastWeek.reduce((n, s) => n + s.attempted, 0)
+      : 0,
+    sessHasData,
+  );
+  const mistDelta = weekDeltaText(
+    mistHasData ? mistThisWeek.length - mistLastWeek.length : 0,
+    mistHasData,
+    "",
+    true,
+  );
+  const sessCntDelta = weekDeltaText(
+    sessHasData ? sessThisWeek.length - sessLastWeek.length : 0,
+    sessHasData,
+  );
+
   const avgAccuracy =
     sessions.length > 0
       ? Math.round(
@@ -118,26 +182,26 @@ function DashboardPage() {
     {
       label: "Avg accuracy",
       value: sessions.length > 0 ? `${avgAccuracy}%` : "—",
-      delta: "—",
-      pos: null,
+      delta: accDelta.text,
+      pos: accDelta.pos,
     },
     {
       label: "Questions attempted",
       value: String(sessions.reduce((sum, s) => sum + s.attempted, 0)),
-      delta: "—",
-      pos: null,
+      delta: qDelta.text,
+      pos: qDelta.pos,
     },
     {
       label: "Mistakes logged",
       value: String(mistakes.length),
-      delta: "—",
-      pos: null,
+      delta: mistDelta.text,
+      pos: mistDelta.pos,
     },
     {
       label: "Study sessions",
       value: String(sessions.length),
-      delta: "—",
-      pos: null,
+      delta: sessCntDelta.text,
+      pos: sessCntDelta.pos,
     },
   ];
 
@@ -239,6 +303,7 @@ function DashboardPage() {
                   >
                     {delta}
                   </p>
+
                 </div>
               ))}
             </div>
