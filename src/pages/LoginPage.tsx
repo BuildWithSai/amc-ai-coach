@@ -14,7 +14,7 @@ type Mode = "signin" | "signup";
 // text-base (16px) on mobile prevents iOS Safari auto-zoom on input focus.
 // sm:text-[14px] restores the design-system size on larger screens.
 const INPUT_CLS =
-  "h-[38px] w-full rounded-lg border border-black/10 bg-white px-3 text-base sm:text-[14px] text-gray-900 transition-all duration-150 placeholder:text-secondary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
+  "h-[38px] w-full rounded-lg border border-black/10 bg-gray-50 px-3 text-base sm:text-[14px] text-gray-900 transition-all duration-150 placeholder:text-secondary focus:border-accent focus:bg-white focus:outline-none focus:ring-2 focus:ring-accent/20";
 
 // Map raw Supabase error strings to user-readable copy.
 // Falls through to the original message for unknown errors so nothing is silently swallowed.
@@ -105,40 +105,33 @@ function LoginPage() {
   return (
     // min-h-[100dvh]: dvh shrinks when the soft keyboard opens on iOS 15.4+ so the form
     // re-centers to the visible area instead of sitting half-covered by the keyboard.
-    // py-12: vertical breathing room; also keeps content scrollable on short viewports
+    // py-10: vertical breathing room; also keeps content scrollable on short viewports
     //   (phone landscape) without any explicit overflow hack.
     // paddingBottom style: clears the home-indicator safe area on notched iPhones.
     //   viewport-fit=cover is set in index.html so env(safe-area-inset-bottom) is live.
     <div
-      className="flex min-h-[100dvh] items-center justify-center bg-[#F5F5F7] px-4 py-12"
-      style={{ paddingBottom: "max(3rem, env(safe-area-inset-bottom))" }}
+      className="flex min-h-[100dvh] items-center justify-center bg-white px-4"
+      style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}
     >
-      <div className="w-full max-w-[360px]">
+      <div className="w-full max-w-[380px]">
 
         {/* Brand mark */}
-        <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0A84FF] to-[#0060D0] shadow-[0_1px_4px_rgba(10,132,255,0.45)]">
-            <Stethoscope className="h-6 w-6 text-white" aria-hidden="true" />
+        <div className="mb-8 text-center">
+          <div className="mb-5 mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-accent">
+            <Stethoscope className="h-5 w-5 text-white" aria-hidden="true" />
           </div>
-          <div className="text-center">
-            <p className="text-[20px] font-semibold tracking-[-0.01em] text-gray-900">
-              AMC AI Coach
-            </p>
-            {/* h1 carries the page purpose for screen readers; visual size is intentionally modest */}
-            <h1 className="mt-0.5 text-[14px] font-normal text-secondary">
-              {mode === "signin" ? "Sign in to your account" : "Create your account"}
-            </h1>
-          </div>
+          <h1 className="text-[24px] font-medium leading-tight text-gray-900">
+            Your AMC study coach.
+          </h1>
+          <p className="mt-1.5 text-[17px] font-medium text-secondary">
+            {mode === "signin" ? "Sign in to your account" : "Create your account"}
+          </p>
         </div>
 
-        {/* Card — aria-live so screen readers catch the form ↔ confirmation swap */}
-        <div
-          className="rounded-xl border border-black/10 bg-white p-6"
-          aria-live="polite"
-          aria-atomic="true"
-        >
+        {/* Form — aria-live so screen readers catch the form ↔ confirmation swap */}
+        <div aria-live="polite" aria-atomic="true">
           {signedUp ? (
-            <div className="text-center">
+            <div>
               <h2
                 ref={confirmRef}
                 tabIndex={-1}
@@ -148,14 +141,14 @@ function LoginPage() {
               </h2>
               <p className="mt-2 text-[14px] leading-relaxed text-secondary" style={{ textWrap: "pretty" }}>
                 We sent a confirmation link to{" "}
-                {/* break-all prevents long email addresses from overflowing the 360px card */}
+                {/* break-all prevents long email addresses from overflowing the 380px container */}
                 <span className="break-all font-medium text-gray-900">{email.trim()}</span>.
                 Open it to activate your account, then come back and sign in.
               </p>
               <button
                 type="button"
                 onClick={() => { setSignedUp(false); setMode("signin"); }}
-                className="mt-5 min-h-[44px] w-full cursor-pointer rounded-lg bg-accent px-4 py-2 text-[14px] font-medium text-white transition-all duration-150 hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 active:scale-[0.98] md:min-h-0"
+                className="mt-5 h-11 w-full cursor-pointer rounded-lg bg-gray-900 px-4 text-[14px] font-medium text-white transition-all duration-150 hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 active:scale-[0.98]"
               >
                 Back to sign in
               </button>
@@ -214,7 +207,7 @@ function LoginPage() {
               <button
                 type="submit"
                 disabled={!isSubmittable}
-                className="min-h-[44px] w-full cursor-pointer rounded-lg bg-accent px-4 py-2 text-[14px] font-medium text-white transition-all duration-150 hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 md:min-h-0"
+                className="h-11 w-full cursor-pointer rounded-lg bg-gray-900 px-4 text-[14px] font-medium text-white transition-all duration-150 hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -229,7 +222,7 @@ function LoginPage() {
 
         {/* Mode toggle — disabled during in-flight requests to prevent mid-request mode switch */}
         {!signedUp && (
-          <p className="mt-5 text-center text-[13px] text-secondary">
+          <p className="mt-6 text-[13px] text-secondary">
             {mode === "signin" ? (
               <>
                 Don't have an account?{" "}
