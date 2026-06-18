@@ -14,8 +14,9 @@ import {
 } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { Button } from "../components/Button";
+import { TopicPill } from "../constants/topicColors";
 import { getSessions, getMistakes } from "../services/storage";
-import type { StudySession, Mistake } from "../types";
+import type { StudySession, Mistake, AMCTopic } from "../types";
 import {
   getRankedWeakTopics,
   getMistakeFrequencyByTopic,
@@ -52,14 +53,21 @@ function relativeTime(isoDate: string): string {
 function AccBar({ acc }: { acc: number }) {
   const fill = acc < 60 ? "bg-danger" : acc < 70 ? "bg-warning" : "bg-success";
   return (
-    <div className="flex items-center gap-2.5">
-      <div className="relative h-1 w-16 overflow-hidden rounded-full bg-gray-200">
+    <div
+      className="flex items-center gap-2.5"
+      role="meter"
+      aria-valuenow={acc}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label="Accuracy"
+    >
+      <div className="relative h-1 w-16 overflow-hidden rounded-full bg-black/10">
         <div
           className={`absolute inset-y-0 left-0 rounded-full ${fill}`}
           style={{ width: `${acc}%` }}
         />
       </div>
-      <span className="tabular-nums text-[13px] text-gray-900">{acc}%</span>
+      <span className="tabular-nums text-[18px] font-medium text-gray-900">{acc}%</span>
     </div>
   );
 }
@@ -67,20 +75,20 @@ function AccBar({ acc }: { acc: number }) {
 function TrendCell({ trend }: { trend: number }) {
   if (trend < 0)
     return (
-      <span className="flex items-center gap-1 tabular-nums text-[13px] text-danger">
-        <TrendingDown className="h-3.5 w-3.5 shrink-0" />
+      <span className="flex items-center gap-1.5 tabular-nums text-[18px] font-medium text-danger">
+        <TrendingDown className="h-5 w-5 shrink-0" />
         {trend}%
       </span>
     );
   if (trend > 0)
     return (
-      <span className="flex items-center gap-1 tabular-nums text-[13px] text-success">
-        <TrendingUp className="h-3.5 w-3.5 shrink-0" />+{trend}%
+      <span className="flex items-center gap-1.5 tabular-nums text-[18px] font-medium text-success">
+        <TrendingUp className="h-5 w-5 shrink-0" />+{trend}%
       </span>
     );
   return (
-    <span className="flex items-center gap-1 tabular-nums text-[13px] text-secondary">
-      <Minus className="h-3.5 w-3.5 shrink-0" />
+    <span className="flex items-center gap-1.5 tabular-nums text-[18px] font-medium text-secondary">
+      <Minus className="h-5 w-5 shrink-0" />
       0%
     </span>
   );
@@ -270,6 +278,7 @@ function DashboardPage() {
             className="mt-1"
             onClick={handleGenerateInsight}
             disabled={loading || sessions.length === 0}
+            aria-busy={loading}
           >
             {loading ? "Generating…" : "Generate insight"}
           </Button>
@@ -286,7 +295,7 @@ function DashboardPage() {
               {STATS.map(({ label, value, delta, pos }) => (
                 <div
                   key={label}
-                  className="rounded-xl border border-black/10 bg-white p-5"
+                  className="rounded-xl bg-white p-5"
                 >
                   <p className="mb-2 text-[13px] text-secondary">{label}</p>
                   <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
@@ -298,7 +307,7 @@ function DashboardPage() {
                         ? "text-success"
                         : pos === false
                           ? "text-danger"
-                          : "text-tertiary"
+                          : "text-secondary"
                     }`}
                   >
                     {delta}
@@ -312,7 +321,7 @@ function DashboardPage() {
             <div aria-live="polite" aria-atomic="true">
               {/* AI Coaching Brief — error state */}
               {error && (
-                <div className="mb-6 rounded-xl border border-black/10 bg-white p-6">
+                <div className="mb-6 rounded-xl bg-white p-6">
                   <p className="text-[14px] text-secondary">
                     AI insights temporarily unavailable. Your data is safe.
                   </p>
@@ -321,7 +330,7 @@ function DashboardPage() {
 
               {/* AI Coaching Brief — insight state */}
               {insight && !error && (
-                <div className="mb-6 rounded-xl border border-black/10 bg-white">
+                <div className="mb-6 rounded-xl bg-white">
                   <div className="grid grid-cols-1 lg:grid-cols-[1fr_308px]">
                     {/* Left: insight + action */}
                     <div className="border-b border-black/5 p-6 lg:border-b-0 lg:border-r">
@@ -339,7 +348,7 @@ function DashboardPage() {
                             Recommended action
                           </span>
                         </div>
-                        <p className="text-[14px] leading-relaxed text-gray-800">
+                        <p className="text-[14px] leading-relaxed text-gray-900">
                           {insight.actionLabel}
                         </p>
                       </div>
@@ -360,11 +369,11 @@ function DashboardPage() {
                             });
                             setFeedbackGiven("helpful");
                           }}
-                          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ${
+                          className={`flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-150 sm:h-8 sm:w-8 ${
                             feedbackGiven === "helpful"
-                              ? "bg-blue-100 text-blue-600"
+                              ? "bg-accent-soft text-accent"
                               : feedbackGiven !== null
-                                ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                ? "bg-gray-100 text-secondary opacity-50 cursor-not-allowed"
                                 : "bg-gray-100 text-secondary hover:bg-gray-200"
                           }`}
                         >
@@ -382,11 +391,11 @@ function DashboardPage() {
                             });
                             setFeedbackGiven("not_helpful");
                           }}
-                          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ${
+                          className={`flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-150 sm:h-8 sm:w-8 ${
                             feedbackGiven === "not_helpful"
-                              ? "bg-red-100 text-red-500"
+                              ? "bg-danger/10 text-danger"
                               : feedbackGiven !== null
-                                ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                ? "bg-gray-100 text-secondary opacity-50 cursor-not-allowed"
                                 : "bg-gray-100 text-secondary hover:bg-gray-200"
                           }`}
                         >
@@ -396,68 +405,66 @@ function DashboardPage() {
                     </div>
 
                     {/* Right: Evidence */}
-                    <div className="p-6">
-                      <p className="mb-4 text-[13px] font-medium text-secondary">
-                        Evidence
-                      </p>
-                      <div className="grid grid-cols-2 gap-x-6 gap-y-6">
-                        <div>
-                          <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
-                            {insight.evidence.accuracy}%
-                          </p>
-                          <p className="mt-2 text-[13px] text-secondary">
-                            Accuracy
-                          </p>
-                          <p
-                            className={`mt-1 text-[12px] capitalize ${trendCls(insight.evidence.trend)}`}
-                          >
-                            {insight.evidence.trend}
-                          </p>
+                    <div className="flex flex-col p-4">
+                      <div className="flex-1 rounded-lg bg-gray-50 p-5">
+                        <p className="mb-4 text-[13px] font-medium text-secondary">
+                          Evidence
+                        </p>
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+                          <div>
+                            <p className="mb-1 text-[12px] text-secondary">
+                              Accuracy
+                            </p>
+                            <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
+                              {insight.evidence.accuracy}%
+                            </p>
+                            <p
+                              className={`mt-1 text-[12px] capitalize ${trendCls(insight.evidence.trend)}`}
+                            >
+                              {insight.evidence.trend}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="mb-1 text-[12px] text-secondary">
+                              Mistakes
+                            </p>
+                            <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
+                              {mistakeFreq.find(
+                                (m) => m.topic === insight.evidence.topic,
+                              )?.count ?? 0}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="mb-1 text-[12px] text-secondary">
+                              Sessions logged
+                            </p>
+                            <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
+                              {
+                                sessions.filter(
+                                  (s) => s.topic === insight.evidence.topic,
+                                ).length
+                              }
+                            </p>
+                          </div>
+                          <div>
+                            <p className="mb-1 text-[12px] text-secondary">
+                              Priority topic
+                            </p>
+                            <TopicPill topic={insight.evidence.topic as AMCTopic} />
+                          </div>
                         </div>
-                        <div>
-                          <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
-                            {mistakeFreq.find(
-                              (m) => m.topic === insight.evidence.topic,
-                            )?.count ?? 0}
-                          </p>
-                          <p className="mt-2 text-[13px] text-secondary">
-                            Mistakes
-                          </p>
-                        </div>
-                        <div>
-                          <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
-                            {
-                              sessions.filter(
-                                (s) => s.topic === insight.evidence.topic,
-                              ).length
-                            }
-                          </p>
-
-                          <p className="mt-1 text-[12px] text-secondary">
-                            Sessions logged
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-[18px] font-bold leading-tight text-gray-900 line-clamp-2">
-                            {insight.evidence.topic}
-                          </p>
-
-                          <p className="mt-1 text-[12px] text-secondary">
-                            Priority topic
-                          </p>
-                        </div>
+                        <p
+                          className={`mt-6 text-right text-[12px] font-medium capitalize ${
+                            insight.urgency === "high"
+                              ? "text-danger"
+                              : insight.urgency === "medium"
+                                ? "text-warning"
+                                : "text-success"
+                          }`}
+                        >
+                          Urgency: {insight.urgency}
+                        </p>
                       </div>
-                      <p
-                        className={`mt-6 text-right text-[12px] font-medium capitalize ${
-                          insight.urgency === "high"
-                            ? "text-danger"
-                            : insight.urgency === "medium"
-                              ? "text-warning"
-                              : "text-success"
-                        }`}
-                      >
-                        Urgency: {insight.urgency}
-                      </p>
                     </div>
                   </div>
                 </div>
@@ -466,8 +473,8 @@ function DashboardPage() {
             {/* end aria-live */}
 
             {/* Topic Performance */}
-            <div className="overflow-hidden rounded-xl border border-black/10 bg-white">
-              <div className="flex items-center justify-between border-b border-black/10 px-6 py-4">
+            <div>
+              <div className="mb-3 flex items-center justify-between px-1">
                 <h2 className="text-[17px] font-semibold text-gray-900">
                   Topic Performance
                 </h2>
@@ -475,51 +482,48 @@ function DashboardPage() {
                   {TOPICS.length} topics · sorted by accuracy
                 </span>
               </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[480px]">
-                  <thead>
-                    <tr className="border-b border-black/5">
-                      {(
-                        [
-                          "Topic",
-                          "Accuracy",
-                          "Trend",
-                          "Mistakes",
-                          "Last studied",
-                        ] as const
-                      ).map((h) => (
-                        <th
-                          key={h}
-                          className="px-6 py-3 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-secondary"
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-black/5">
-                    {TOPICS.map((row) => (
-                      <tr key={row.topic}>
-                        <td className="px-6 py-3.5 text-[14px] font-medium text-gray-900">
-                          {row.topic}
-                        </td>
-                        <td className="px-6 py-3.5">
+              <div className="flex flex-col gap-3">
+                {TOPICS.map((row) => (
+                  <div key={row.topic} className="rounded-xl bg-white p-4">
+                    <div className="mb-3">
+                      <TopicPill topic={row.topic as AMCTopic} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      <div>
+                        <p className="text-[11px] font-medium text-secondary">
+                          Accuracy
+                        </p>
+                        <div className="mt-0.5">
                           <AccBar acc={row.acc} />
-                        </td>
-                        <td className="px-6 py-3.5">
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-medium text-secondary">
+                          Trend
+                        </p>
+                        <div className="mt-0.5">
                           <TrendCell trend={row.trend} />
-                        </td>
-                        <td className="px-6 py-3.5 tabular-nums text-[14px] text-gray-900">
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-medium text-secondary">
+                          Mistakes
+                        </p>
+                        <p className="mt-0.5 tabular-nums text-[18px] font-medium text-gray-900">
                           {row.mistakes}
-                        </td>
-                        <td className="px-6 py-3.5 text-[13px] text-secondary">
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-medium text-secondary">
+                          Last studied
+                        </p>
+                        <p className="mt-0.5 text-[18px] font-medium text-secondary">
                           {row.lastStudied}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </>
