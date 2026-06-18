@@ -58,13 +58,13 @@ function AIInsightCard({
       {/* Evidence panel */}
       {evidence.length > 0 && (
         <div className="mb-5 rounded-lg bg-gray-50 p-4">
-          <div className="flex flex-wrap gap-x-8 gap-y-4">
+          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 220px))' }}>
             {evidence.map((item) => (
-              <div key={item.label} className="min-w-[72px]">
-                <p className={`text-[18px] font-bold leading-none text-gray-900 ${item.mono !== false ? 'tabular-nums' : ''}`}>
+              <div key={item.label}>
+                <p className="mb-1 text-[12px] text-secondary">{item.label}</p>
+                <p className={`text-[28px] font-bold leading-none text-gray-900 ${item.mono !== false ? 'tabular-nums' : ''}`}>
                   {item.value}
                 </p>
-                <p className="mt-1 text-[12px] text-secondary">{item.label}</p>
                 {item.delta && (
                   <p className={`mt-0.5 tabular-nums text-[11px] ${deltaColorCls(item.deltaColor)}`}>
                     {item.delta}
@@ -114,7 +114,7 @@ function AIInsightCard({
               <p className="mb-1.5 text-[12px] font-semibold text-accent">
                 Key takeaway
               </p>
-              <p className="text-[14px] leading-relaxed text-gray-800">
+              <p className="text-[14px] leading-relaxed text-gray-900">
                 {keyTakeaway}
               </p>
             </div>
@@ -144,11 +144,11 @@ function AIInsightCard({
                 title="Helpful"
                 aria-pressed={feedback === 'helpful'}
                 disabled={feedback !== null}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed ${
+                className={`flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed sm:h-8 sm:w-8 ${
                   feedback === 'helpful'
                     ? 'bg-accent-soft text-accent'
                     : feedback !== null
-                      ? 'bg-gray-100 text-gray-300'
+                      ? 'bg-gray-100 text-secondary opacity-50'
                       : 'bg-gray-100 text-secondary hover:bg-gray-200'
                 }`}
               >
@@ -160,11 +160,11 @@ function AIInsightCard({
                 title="Not helpful"
                 aria-pressed={feedback === 'not_helpful'}
                 disabled={feedback !== null}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed ${
+                className={`flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed sm:h-8 sm:w-8 ${
                   feedback === 'not_helpful'
-                    ? 'bg-red-50 text-danger'
+                    ? 'bg-danger/10 text-danger'
                     : feedback !== null
-                      ? 'bg-gray-100 text-gray-300'
+                      ? 'bg-gray-100 text-secondary opacity-50'
                       : 'bg-gray-100 text-secondary hover:bg-gray-200'
                 }`}
               >

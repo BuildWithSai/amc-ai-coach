@@ -20,9 +20,40 @@ import type { WeakTopicAnalysisResponse } from "../types/aiResponses";
 import type { MistakePatternResponse } from "../types/aiResponses";
 import type { RecommendationResponse } from "../types/aiResponses";
 import { AppShell } from "../components/AppShell";
-import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { SectionTitle } from "../components/SectionTitle";
+
+function GenerateButton({
+  onClick,
+  disabled,
+  isLoading,
+  loadingLabel,
+  label,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+  isLoading: boolean;
+  loadingLabel: string;
+  label: string;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      size="sm"
+      onClick={onClick}
+      disabled={disabled}
+      aria-busy={isLoading}
+    >
+      {isLoading ? (
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-3 w-3 animate-spin rounded-full border-[1.5px] border-gray-400 border-t-transparent" />
+          {loadingLabel}
+        </span>
+      ) : label}
+    </Button>
+  );
+}
 
 function AICoachPage() {
   const [sessions, setSessions] = useState<StudySession[]>([]);
@@ -90,35 +121,6 @@ function AICoachPage() {
     deltaColor: (trend === "improving" ? "green" : trend === "declining" ? "red" : "amber") as "green" | "red" | "amber",
   });
 
-  const GenerateButton = ({
-    onClick,
-    disabled,
-    isLoading,
-    loadingLabel,
-    label,
-  }: {
-    onClick: () => void;
-    disabled: boolean;
-    isLoading: boolean;
-    loadingLabel: string;
-    label: string;
-  }) => (
-    <Button
-      type="button"
-      variant="secondary"
-      size="sm"
-      onClick={onClick}
-      disabled={disabled}
-    >
-      {isLoading ? (
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-3 animate-spin rounded-full border-[1.5px] border-gray-400 border-t-transparent" />
-          {loadingLabel}
-        </span>
-      ) : label}
-    </Button>
-  );
-
   return (
     <AppShell>
       <div className="mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:w-4/5">
@@ -129,7 +131,7 @@ function AICoachPage() {
         />
 
         {sessions.length === 0 ? (
-          <Card>
+          <div className="rounded-xl bg-white">
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft">
                 <Sparkles className="h-6 w-6 text-accent" />
@@ -139,12 +141,12 @@ function AICoachPage() {
                 Log study sessions and mistakes to unlock AI-generated insights.
               </p>
             </div>
-          </Card>
+          </div>
         ) : (
           <div className="space-y-5">
 
             {/* Weak Topic Analysis */}
-            <Card overflow>
+            <div className="overflow-hidden rounded-xl bg-white">
               <div className="flex items-center justify-between border-b border-black/10 px-6 py-4">
                 <div>
                   <h2 className="text-[17px] font-semibold text-gray-900">Weak Topic Analysis</h2>
@@ -183,10 +185,10 @@ function AICoachPage() {
                   priority={weakTopicInsight?.weakTopics[0]?.priority ?? null}
                 />
               </div>
-            </Card>
+            </div>
 
             {/* Mistake Patterns */}
-            <Card overflow>
+            <div className="overflow-hidden rounded-xl bg-white">
               <div className="flex items-center justify-between border-b border-black/10 px-6 py-4">
                 <h2 className="text-[17px] font-semibold text-gray-900">Mistake Patterns</h2>
                 <GenerateButton
@@ -230,10 +232,10 @@ function AICoachPage() {
                   </>
                 )}
               </div>
-            </Card>
+            </div>
 
             {/* Recommendations */}
-            <Card overflow>
+            <div className="overflow-hidden rounded-xl bg-white">
               <div className="flex items-center justify-between border-b border-black/10 px-6 py-4">
                 <h2 className="text-[17px] font-semibold text-gray-900">Recommendations</h2>
                 <GenerateButton
@@ -264,7 +266,7 @@ function AICoachPage() {
                   priority={recommendationInsight?.recommendations[0]?.priority ?? null}
                 />
               </div>
-            </Card>
+            </div>
 
           </div>
         )}
