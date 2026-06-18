@@ -51,7 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   return (
-    <div className="fixed inset-0 flex overflow-hidden bg-[#F5F5F7]">
+    <div className="fixed inset-0 flex overflow-hidden bg-[#F7F8FA]">
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
