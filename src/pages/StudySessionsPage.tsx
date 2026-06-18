@@ -1,7 +1,9 @@
 /**
  * Form to log a study session (topic, attempted, correct, incorrect, notes).
  * Validates that correct + incorrect === attempted before saving. Writes to Supabase
- * and refetches the full list so the table stays in sync.
+ * and refetches the full list so the view stays in sync.
+ *
+ * Visual treatment matches MistakesPage: layered surfaces, topic pill system, card-per-session layout.
  */
 import { useState, useEffect, Fragment } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -11,34 +13,16 @@ import { getSessions, saveSession } from "../services/storage";
 import { AppShell } from "../components/AppShell";
 import { Button } from "../components/Button";
 import { SectionTitle } from "../components/SectionTitle";
+import { TopicPill, TopicSelect } from "../constants/topicColors";
 
-const AMC_TOPICS: AMCTopic[] = [
-  "Cardiology",
-  "Respiratory Medicine",
-  "Gastroenterology",
-  "Neurology",
-  "Obstetrics & Gynaecology",
-  "Paediatrics",
-  "Psychiatry",
-  "Surgery",
-  "Pharmacology",
-  "Endocrinology",
-  "Infectious Diseases",
-  "Renal Medicine",
-  "Musculoskeletal",
-  "Dermatology",
-  "Haematology",
-];
+// ── Constants ────────────────────────────────────────────────────────────────
 
-const inputCls =
-  "h-[38px] w-full rounded-lg border border-black/10 bg-white px-3 text-[14px] text-gray-900 transition-all duration-150 placeholder:text-secondary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
-
-const monoInputCls =
-  "h-[38px] w-full rounded-lg border border-black/10 bg-white px-3 tabular-nums text-[14px] text-gray-900 transition-all duration-150 placeholder:text-secondary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
-
-const labelCls = "mb-1.5 block text-[13px] font-medium text-secondary";
+const labelCls =
+  "mb-1 block text-[11px] font-semibold uppercase tracking-[0.06em] text-secondary";
 
 const DAY = 86_400_000;
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function getMondayStr(ms: number): string {
   const dow = new Date(ms).getUTCDay(); // 0 = Sunday
@@ -65,6 +49,7 @@ function getWeekLabel(mondayStr: string, thisWeekMonday: string): string {
   return `${fmt(mondayMs)} – ${fmt(sundayMs)}`;
 }
 
+// ── Page ─────────────────────────────────────────────────────────────────────
 
 function StudySessionsPage() {
   const [topic, setTopic] = useState<AMCTopic>("Cardiology");
@@ -74,6 +59,7 @@ function StudySessionsPage() {
   const [notes, setNotes] = useState("");
   const [sessions, setSessions] = useState<StudySession[]>([]);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState("");
   const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>(
     () => ({ [getMondayStr(Date.now())]: true }),
   );
@@ -81,7 +67,6 @@ function StudySessionsPage() {
   useEffect(() => {
     getSessions().then(setSessions);
   }, []);
-  const [validationError, setValidationError] = useState("");
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +102,7 @@ function StudySessionsPage() {
   const now = Date.now();
   const thisWeekMonday = getMondayStr(now);
 
-  // Card 1 – This week
+  // Card 1 – This week (rolling 7d + 4-week avg)
   const thisWeekCount = sessions.filter(
     (s) => now - new Date(s.createdAt).getTime() < 7 * DAY,
   ).length;
@@ -151,13 +136,12 @@ function StudySessionsPage() {
   }
   const mostPracticedEntry = Object.entries(topicCounts).sort(
     (a, b) => b[1] - a[1],
-  )[0];
-  const mostPracticedTopic = mostPracticedEntry?.[0] ?? "—";
+  )[0] as [AMCTopic, number] | undefined;
   const mostPracticedSubtext = mostPracticedEntry
     ? `${Math.round((mostPracticedEntry[1] / sessions.length) * 100)}% of all your sessions`
     : "—";
 
-  // Card 3 – Last logged
+  // Card 3 – Last logged + streak
   const lastSession =
     sessions.length > 0
       ? [...sessions].sort(
@@ -183,7 +167,6 @@ function StudySessionsPage() {
         ? "text-success"
         : "text-warning";
 
-  // Consecutive-day streak (UTC days)
   const sessionDaySet = new Set(sessions.map((s) => s.createdAt.slice(0, 10)));
   let streak = 0;
   for (let i = 0; i < 365; i++) {
@@ -195,11 +178,9 @@ function StudySessionsPage() {
     }
   }
   const streakText =
-    streak <= 1
-      ? "No active streak"
-      : `${streak} consecutive days logged`;
+    streak <= 1 ? "No active streak" : `${streak} consecutive days logged`;
 
-  // ── Week groups for table ────────────────────────────────────────────────
+  // ── Week groups ──────────────────────────────────────────────────────────
   const weekGroups: Record<string, StudySession[]> = {};
   for (const s of sessions) {
     const monday = getMondayStr(new Date(s.createdAt).getTime());
@@ -208,104 +189,108 @@ function StudySessionsPage() {
   }
   const sortedWeekMondays = Object.keys(weekGroups).sort().reverse();
 
-  // ── Form card (always visible) ───────────────────────────────────────────
+  // ── Form ──────────────────────────────────────────────────────────────────
   const formCard = (
-    <div className="rounded-xl border border-black/10 bg-white p-5">
-      <h2 className="mb-4 text-[13px] font-semibold uppercase tracking-[0.06em] text-secondary">
+    <div className="rounded-xl bg-white p-5">
+      <h2 className="mb-4 text-[15px] font-semibold text-gray-900">
         Add session
       </h2>
       <form onSubmit={handleSave} noValidate>
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="min-w-[140px] flex-[2]">
-            <label htmlFor="session-topic" className={labelCls}>
-              Topic
-            </label>
-            <select
-              id="session-topic"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value as AMCTopic)}
-              className={inputCls}
-            >
-              {AMC_TOPICS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+        {/* Row 1: topic select + connected number trio */}
+        <div className="mb-4 grid grid-cols-[160px_1fr] items-start gap-3">
+          <div>
+            <p className={labelCls}>Topic</p>
+            <TopicSelect value={topic} onChange={setTopic} />
           </div>
-          <div className="w-[84px] shrink-0">
-            <label htmlFor="session-attempted" className={labelCls}>
-              Attempted
-            </label>
-            <input
-              id="session-attempted"
-              type="number"
-              min="0"
-              value={attempted}
-              onChange={(e) => {
-                setAttempted(e.target.value);
-                setValidationError("");
-              }}
-              className={monoInputCls}
-              placeholder="0"
-            />
-          </div>
-          <div className="w-[76px] shrink-0">
-            <label htmlFor="session-correct" className={labelCls}>
-              Correct
-            </label>
-            <input
-              id="session-correct"
-              type="number"
-              min="0"
-              value={correct}
-              onChange={(e) => {
-                setCorrect(e.target.value);
-                setValidationError("");
-              }}
-              className={monoInputCls}
-              placeholder="0"
-            />
-          </div>
-          <div className="w-[76px] shrink-0">
-            <label htmlFor="session-incorrect" className={labelCls}>
-              Incorrect
-            </label>
-            <input
-              id="session-incorrect"
-              type="number"
-              min="0"
-              value={incorrect}
-              onChange={(e) => {
-                setIncorrect(e.target.value);
-                setValidationError("");
-              }}
-              className={monoInputCls}
-              placeholder="0"
-            />
-          </div>
-          <div className="shrink-0">
-            <Button type="submit">Save session</Button>
+          <div>
+            <p className={labelCls}>Questions</p>
+            <div className="flex overflow-hidden rounded-xl bg-gray-100">
+              <div className="flex-1 px-3 py-2.5">
+                <label
+                  htmlFor="session-attempted"
+                  className="mb-0.5 block text-[11px] font-medium text-secondary"
+                >
+                  Attempted
+                </label>
+                <input
+                  id="session-attempted"
+                  type="number"
+                  min="0"
+                  value={attempted}
+                  onChange={(e) => {
+                    setAttempted(e.target.value);
+                    setValidationError("");
+                  }}
+                  className="w-full bg-transparent tabular-nums text-[16px] font-medium text-gray-900 outline-none placeholder:text-gray-400"
+                  placeholder="—"
+                />
+              </div>
+              <div className="flex-1 border-l border-black/[0.06] px-3 py-2.5">
+                <label
+                  htmlFor="session-correct"
+                  className="mb-0.5 block text-[11px] font-medium text-secondary"
+                >
+                  Correct
+                </label>
+                <input
+                  id="session-correct"
+                  type="number"
+                  min="0"
+                  value={correct}
+                  onChange={(e) => {
+                    setCorrect(e.target.value);
+                    setValidationError("");
+                  }}
+                  className="w-full bg-transparent tabular-nums text-[16px] font-medium text-gray-900 outline-none placeholder:text-gray-400"
+                  placeholder="—"
+                />
+              </div>
+              <div className="flex-1 border-l border-black/[0.06] px-3 py-2.5">
+                <label
+                  htmlFor="session-incorrect"
+                  className="mb-0.5 block text-[11px] font-medium text-secondary"
+                >
+                  Incorrect
+                </label>
+                <input
+                  id="session-incorrect"
+                  type="number"
+                  min="0"
+                  value={incorrect}
+                  onChange={(e) => {
+                    setIncorrect(e.target.value);
+                    setValidationError("");
+                  }}
+                  className="w-full bg-transparent tabular-nums text-[16px] font-medium text-gray-900 outline-none placeholder:text-gray-400"
+                  placeholder="—"
+                />
+              </div>
+            </div>
           </div>
         </div>
-        {validationError && (
-          <p role="alert" className="mt-2 text-[13px] text-danger">
-            {validationError}
-          </p>
-        )}
-        <div className="mt-3">
+
+        {/* Notes */}
+        <div className="mb-4">
           <label htmlFor="session-notes" className={labelCls}>
             Notes
           </label>
           <textarea
             id="session-notes"
-            rows={2}
+            rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Optional notes about this session…"
-            className="w-full resize-none rounded-lg border border-black/10 bg-white px-3 py-2 text-[14px] text-gray-900 transition-all duration-150 placeholder:text-secondary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            className="w-full resize-none rounded-xl bg-gray-100 px-3 py-2 text-[14px] text-gray-900 placeholder:text-secondary/60 outline-none transition-colors focus:bg-gray-50"
           />
         </div>
+
+        {validationError && (
+          <p role="alert" className="mb-4 text-[13px] text-danger">
+            {validationError}
+          </p>
+        )}
+
+        <Button type="submit">Save session</Button>
       </form>
     </div>
   );
@@ -321,7 +306,7 @@ function StudySessionsPage() {
         {sessions.length === 0 ? (
           <>
             {formCard}
-            <div className="mt-6 rounded-xl border border-black/10 bg-white">
+            <div className="mt-6 rounded-xl bg-white">
               <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
                 <p className="text-[15px] font-semibold text-gray-900">
                   No sessions logged yet
@@ -338,7 +323,7 @@ function StudySessionsPage() {
             <div className="mb-6 grid grid-cols-3 gap-3 sm:gap-4">
 
               {/* Card 1 – This week */}
-              <div className="rounded-xl border border-black/10 bg-white p-5">
+              <div className="rounded-xl bg-white p-5">
                 <p className="mb-2 text-[13px] text-secondary">This week</p>
                 <p className={`text-[24px] font-medium leading-none ${thisWeekValueColor}`}>
                   {thisWeekCount} session{thisWeekCount === 1 ? "" : "s"}
@@ -347,16 +332,20 @@ function StudySessionsPage() {
               </div>
 
               {/* Card 2 – Most practiced */}
-              <div className="rounded-xl border border-black/10 bg-white p-5">
+              <div className="rounded-xl bg-white p-5">
                 <p className="mb-2 text-[13px] text-secondary">Most practiced</p>
-                <p className="text-[18px] font-medium leading-tight text-gray-900 line-clamp-2">
-                  {mostPracticedTopic}
-                </p>
+                {mostPracticedEntry ? (
+                  <div className="mb-1">
+                    <TopicPill topic={mostPracticedEntry[0]} />
+                  </div>
+                ) : (
+                  <p className="text-[24px] font-medium leading-none text-gray-900">—</p>
+                )}
                 <p className="mt-2 text-[12px] text-secondary">{mostPracticedSubtext}</p>
               </div>
 
               {/* Card 3 – Last logged */}
-              <div className="rounded-xl border border-black/10 bg-white p-5">
+              <div className="rounded-xl bg-white p-5">
                 <p className="mb-2 text-[13px] text-secondary">Last logged</p>
                 <p className={`text-[24px] font-medium leading-none ${lastLoggedColor}`}>
                   {lastLoggedText}
@@ -369,111 +358,120 @@ function StudySessionsPage() {
             {/* ── Form ──────────────────────────────────────────────────── */}
             <div className="mb-6">{formCard}</div>
 
-            {/* ── Sessions table grouped by week ────────────────────────── */}
-            <div className="rounded-xl border border-black/10 bg-white">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[480px]">
-                  <tbody>
-                    {sortedWeekMondays.map((monday, weekIdx) => {
-                      const weekSessions = weekGroups[monday];
-                      const isExpanded = !!expandedWeeks[monday];
-                      const label = getWeekLabel(monday, thisWeekMonday);
-                      const sortedSessions = [...weekSessions].sort(
-                        (a, b) =>
-                          new Date(b.createdAt).getTime() -
-                          new Date(a.createdAt).getTime(),
-                      );
-                      return (
-                        <Fragment key={monday}>
-                          {/* Week group header */}
-                          <tr
-                            onClick={() => toggleWeek(monday)}
-                            className={`cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-100 ${weekIdx > 0 ? "border-t border-black/10" : ""}`}
-                          >
-                            <td colSpan={5} className="px-5 py-3">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  {isExpanded ? (
-                                    <ChevronDown className="h-4 w-4 shrink-0 text-secondary" />
-                                  ) : (
-                                    <ChevronRight className="h-4 w-4 shrink-0 text-secondary" />
-                                  )}
-                                  <span className="text-[14px] font-medium text-gray-900">
-                                    {label}
-                                  </span>
-                                </div>
-                                <span className="text-[13px] text-secondary">
-                                  {weekSessions.length} session{weekSessions.length === 1 ? "" : "s"}
+            {/* ── Session cards grouped by week ─────────────────────────── */}
+            <div className="space-y-3">
+              {sortedWeekMondays.map((monday) => {
+                const weekSessions = weekGroups[monday];
+                const isExpanded = !!expandedWeeks[monday];
+                const label = getWeekLabel(monday, thisWeekMonday);
+                const sortedSessions = [...weekSessions].sort(
+                  (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime(),
+                );
+
+                return (
+                  <Fragment key={monday}>
+                    {/* Week group header */}
+                    <button
+                      type="button"
+                      onClick={() => toggleWeek(monday)}
+                      className="flex w-full items-center justify-between rounded-xl bg-gray-100 px-5 py-3.5 transition-colors duration-100 hover:bg-gray-200/70"
+                    >
+                      <div className="flex items-center gap-2">
+                        {isExpanded ? (
+                          <ChevronDown className="h-4 w-4 shrink-0 text-secondary" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 shrink-0 text-secondary" />
+                        )}
+                        <span className="text-[14px] font-medium text-gray-900">
+                          {label}
+                        </span>
+                      </div>
+                      <span className="text-[13px] text-secondary">
+                        {weekSessions.length} session{weekSessions.length === 1 ? "" : "s"}
+                      </span>
+                    </button>
+
+                    {/* Session cards */}
+                    {isExpanded && (
+                      <div className="flex flex-col gap-3 px-1">
+                        {sortedSessions.map((session) => {
+                          const accuracy =
+                            session.attempted > 0
+                              ? Math.round(
+                                  (session.correct / session.attempted) * 100,
+                                )
+                              : 0;
+                          const accuracyColor =
+                            accuracy < 60
+                              ? "text-danger"
+                              : accuracy <= 70
+                                ? "text-warning"
+                                : "text-success";
+                          const date = new Date(
+                            session.createdAt,
+                          ).toLocaleDateString("en-AU", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          });
+
+                          return (
+                            <div
+                              key={session.id}
+                              className={`rounded-xl bg-white p-4 ${session.id === highlightId ? "animate-row-highlight" : ""}`}
+                            >
+                              {/* Header: topic pill + date */}
+                              <div className="mb-3 flex items-center justify-between gap-3">
+                                <TopicPill topic={session.topic} />
+                                <span className="shrink-0 text-[12px] text-secondary">
+                                  {date}
                                 </span>
                               </div>
-                            </td>
-                          </tr>
 
-                          {/* Column header + data rows (when expanded) */}
-                          {isExpanded && (
-                            <>
-                              <tr className="border-t border-black/5 bg-white">
-                                {["Topic", "Date", "Attempted", "Correct", "Accuracy"].map((col) => (
-                                  <th
-                                    key={col}
-                                    className="px-5 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-secondary"
-                                  >
-                                    {col}
-                                  </th>
-                                ))}
-                              </tr>
-                              {sortedSessions.map((session) => {
-                                const accuracy = Math.round(
-                                  (session.correct / session.attempted) * 100,
-                                );
-                                const date = new Date(
-                                  session.createdAt,
-                                ).toLocaleDateString("en-AU", {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                });
-                                const accuracyColor =
-                                  accuracy < 55
-                                    ? "text-danger"
-                                    : accuracy <= 65
-                                      ? "text-warning"
-                                      : "text-success";
-                                return (
-                                  <tr
-                                    key={session.id}
-                                    className={`border-t border-black/5 transition-colors duration-150 hover:bg-gray-50 ${session.id === highlightId ? "animate-row-highlight" : ""}`}
-                                  >
-                                    <td className="px-5 py-3 text-[14px] text-gray-900">
-                                      {session.topic}
-                                    </td>
-                                    <td className="whitespace-nowrap px-5 py-3 tabular-nums text-[14px] text-secondary">
-                                      {date}
-                                    </td>
-                                    <td className="px-5 py-3 tabular-nums text-[14px] text-gray-900">
-                                      {session.attempted}
-                                    </td>
-                                    <td className="px-5 py-3 tabular-nums text-[14px] text-gray-900">
-                                      {session.correct}
-                                    </td>
-                                    <td className="px-5 py-3">
-                                      <span
-                                        className={`tabular-nums text-[14px] font-medium ${accuracyColor}`}
-                                      >
-                                        {accuracy}%
-                                      </span>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </>
-                          )}
-                        </Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                              {/* Stats row */}
+                              <div className="flex gap-6">
+                                <div>
+                                  <p className="text-[11px] font-medium text-secondary">
+                                    Attempted
+                                  </p>
+                                  <p className="mt-0.5 tabular-nums text-[18px] font-medium text-gray-900">
+                                    {session.attempted}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-[11px] font-medium text-secondary">
+                                    Correct
+                                  </p>
+                                  <p className="mt-0.5 tabular-nums text-[18px] font-medium text-gray-900">
+                                    {session.correct}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-[11px] font-medium text-secondary">
+                                    Accuracy
+                                  </p>
+                                  <p className={`mt-0.5 tabular-nums text-[18px] font-medium ${accuracyColor}`}>
+                                    {accuracy}%
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Notes (if present) */}
+                              {session.notes && (
+                                <p className="mt-3 text-[13px] leading-relaxed text-secondary">
+                                  {session.notes}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </Fragment>
+                );
+              })}
             </div>
           </>
         )}
