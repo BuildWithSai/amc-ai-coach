@@ -58,7 +58,7 @@ function AIInsightCard({
       {/* Evidence panel */}
       {evidence.length > 0 && (
         <div className="mb-5 rounded-lg bg-gray-50 p-4">
-          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 220px))' }}>
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:[grid-template-columns:repeat(3,minmax(0,220px))]">
             {evidence.map((item) => (
               <div key={item.label}>
                 <p className="mb-1 text-[12px] text-secondary">{item.label}</p>
