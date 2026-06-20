@@ -8,6 +8,7 @@ import DashboardPage from "./pages/DashboardPage";
 import StudySessionsPage from "./pages/StudySessionsPage";
 import MistakesPage from "./pages/MistakesPage";
 import AICoachPage from "./pages/AICoachPage";
+import SettingsPage from "./pages/SettingsPage";
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -19,7 +20,9 @@ function App() {
       setChecking(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
 
@@ -43,6 +46,7 @@ function App() {
         <Route path="/study-sessions" element={<StudySessionsPage />} />
         <Route path="/mistakes" element={<MistakesPage />} />
         <Route path="/ai-coach" element={<AICoachPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </BrowserRouter>
   );
