@@ -5,11 +5,12 @@
  * Visual experiment: layered-surface (no borders), topic color system, card-per-mistake layout.
  * Do not propagate these design choices to other files.
  */
-import { useState, useEffect, Fragment } from "react";
+import { useState, Fragment } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import type { Mistake, AMCTopic } from "../types";
-import { getMistakes, saveMistake } from "../services/storage";
+import { saveMistake } from "../services/storage";
+import { useMistakes } from "../hooks/useMistakes";
 import { AppShell } from "../components/AppShell";
 import { Button } from "../components/Button";
 import { SectionTitle } from "../components/SectionTitle";
@@ -54,15 +55,11 @@ function MistakesPage() {
   const [questionSummary, setQuestionSummary] = useState("");
   const [whyWrong, setWhyWrong] = useState("");
   const [correctConcept, setCorrectConcept] = useState("");
-  const [mistakes, setMistakes] = useState<Mistake[]>([]);
+  const { mistakes, loading, error, refetch } = useMistakes();
   const [validationError, setValidationError] = useState("");
   const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>(
     () => ({ [getMondayStr(Date.now())]: true }),
   );
-
-  useEffect(() => {
-    getMistakes().then(setMistakes);
-  }, []);
 
   const handleSaveMistake = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +77,7 @@ function MistakesPage() {
       correctConcept,
     };
     await saveMistake(newMistake);
-    setMistakes(await getMistakes());
+    await refetch();
     setQuestionSummary("");
     setWhyWrong("");
     setCorrectConcept("");
@@ -169,7 +166,9 @@ function MistakesPage() {
           <div>
             <label htmlFor="mistake-question" className={labelCls}>
               Question summary{" "}
-              <span className="text-danger" aria-hidden="true">*</span>
+              <span className="text-danger" aria-hidden="true">
+                *
+              </span>
             </label>
             <textarea
               id="mistake-question"
@@ -190,7 +189,9 @@ function MistakesPage() {
           <div className="px-4 pt-3 pb-2">
             <label htmlFor="mistake-why" className={labelCls}>
               Why I got it wrong{" "}
-              <span className="text-danger" aria-hidden="true">*</span>
+              <span className="text-danger" aria-hidden="true">
+                *
+              </span>
             </label>
             <textarea
               id="mistake-why"
@@ -207,7 +208,9 @@ function MistakesPage() {
           <div className="border-t border-black/[0.06] px-4 pt-3 pb-3">
             <label htmlFor="mistake-concept" className={labelCls}>
               Correct concept{" "}
-              <span className="text-danger" aria-hidden="true">*</span>
+              <span className="text-danger" aria-hidden="true">
+                *
+              </span>
             </label>
             <textarea
               id="mistake-concept"
@@ -241,7 +244,10 @@ function MistakesPage() {
           title="Mistakes"
           subtitle="Every mistake logged is a pattern found."
         />
-
+        {loading && (
+          <p className="text-secondary text-[14px]">Loading mistakes…</p>
+        )}
+        {error && <p className="text-danger text-[14px]">{error}</p>}
         {mistakes.length === 0 ? (
           <>
             {formCard}
@@ -260,25 +266,32 @@ function MistakesPage() {
           <>
             {/* ── Summary cards ─────────────────────────────────────────── */}
             <div className="mb-6 grid grid-cols-3 gap-3 sm:gap-4">
-
               {/* Card 1 – Total mistakes */}
               <div className="rounded-xl bg-white p-5">
-                <p className="mb-2 text-[13px] text-secondary">Total mistakes</p>
+                <p className="mb-2 text-[13px] text-secondary">
+                  Total mistakes
+                </p>
                 <p className="text-[24px] font-medium leading-none text-gray-900">
                   {mistakes.length}
                 </p>
-                <p className="mt-2 text-[12px] text-secondary">{totalSubtext}</p>
+                <p className="mt-2 text-[12px] text-secondary">
+                  {totalSubtext}
+                </p>
               </div>
 
               {/* Card 2 – Most recurring */}
               <div className="rounded-xl bg-white p-5">
-                <p className="mb-2 text-[13px] text-secondary">Most recurring</p>
+                <p className="mb-2 text-[13px] text-secondary">
+                  Most recurring
+                </p>
                 {mostRecurringEntry ? (
                   <div className="mb-1">
                     <TopicPill topic={mostRecurringEntry[0]} />
                   </div>
                 ) : (
-                  <p className="text-[24px] font-medium leading-none text-gray-900">—</p>
+                  <p className="text-[24px] font-medium leading-none text-gray-900">
+                    —
+                  </p>
                 )}
                 <p className="mt-2 text-[12px] text-secondary">
                   {mostRecurringSubtext}
@@ -288,14 +301,15 @@ function MistakesPage() {
               {/* Card 3 – Last logged */}
               <div className="rounded-xl bg-white p-5">
                 <p className="mb-2 text-[13px] text-secondary">Last logged</p>
-                <p className={`text-[24px] font-medium leading-none ${lastMistakeColor}`}>
+                <p
+                  className={`text-[24px] font-medium leading-none ${lastMistakeColor}`}
+                >
                   {lastMistakeText}
                 </p>
                 <p className="mt-2 text-[12px] text-secondary">
                   {lastMistakeSubtext}
                 </p>
               </div>
-
             </div>
 
             {/* ── Form ──────────────────────────────────────────────────── */}
@@ -349,7 +363,10 @@ function MistakesPage() {
                             year: "numeric",
                           });
                           return (
-                            <div key={mistake.id} className="rounded-xl bg-white p-4">
+                            <div
+                              key={mistake.id}
+                              className="rounded-xl bg-white p-4"
+                            >
                               {/* Header: topic pill + date */}
                               <div className="mb-2.5 flex items-center justify-between gap-3">
                                 <TopicPill topic={mistake.topic} />
