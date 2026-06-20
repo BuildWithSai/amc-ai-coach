@@ -54,3 +54,9 @@ export interface AIInteraction {
   rating: "helpful" | "not_helpful" | null;
   createdAt: string;
 }
+
+export interface UserProfile {
+  examDate: string | null;
+  weeklyHours: number | null;
+  updatedAt: string;
+}

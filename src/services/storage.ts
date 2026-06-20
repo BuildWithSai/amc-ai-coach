@@ -3,7 +3,12 @@
  * Maps camelCase TS fields to snake_case DB columns on write, and back on read.
  * Errors are logged to the console; functions never throw to the caller.
  */
-import type { StudySession, Mistake, AIInteraction } from "../types";
+import type {
+  StudySession,
+  Mistake,
+  AIInteraction,
+  UserProfile,
+} from "../types";
 import { supabase } from "./supabase";
 
 export async function getSessions(): Promise<StudySession[]> {
@@ -110,4 +115,37 @@ export async function getRecentAIInteractions(
     rating: row.rating,
     createdAt: row.created_at,
   }));
+}
+
+export async function getUserProfile(): Promise<UserProfile | null> {
+  const userId = (await supabase.auth.getUser()).data.user?.id;
+  const { data, error } = await supabase
+    .from("user_profiles")
+    .select("*")
+    .eq("user_id", userId ?? "")
+    .maybeSingle();
+  if (error) {
+    console.error("getUserProfile error:", error);
+    return null;
+  }
+  if (!data) return null;
+  return {
+    examDate: data.exam_date,
+    weeklyHours: data.weekly_hours,
+    updatedAt: data.updated_at,
+  };
+}
+
+export async function saveUserProfile(
+  examDate: string | null,
+  weeklyHours: number | null,
+): Promise<void> {
+  const userId = (await supabase.auth.getUser()).data.user?.id;
+  const { error } = await supabase.from("user_profiles").upsert({
+    user_id: userId,
+    exam_date: examDate,
+    weekly_hours: weeklyHours,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) console.error("saveUserProfile error:", error);
 }
