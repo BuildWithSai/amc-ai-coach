@@ -15,7 +15,6 @@ import {
 import { AppShell } from "../components/AppShell";
 import { Button } from "../components/Button";
 import { TopicPill } from "../constants/topicColors";
-import { getSessions, getMistakes } from "../services/storage";
 import type { StudySession, Mistake, AMCTopic } from "../types";
 import {
   getRankedWeakTopics,
@@ -26,6 +25,12 @@ import { buildDashboardInsightPrompt } from "../prompts/dashboardInsight";
 import { callOpenAI } from "../services/openai";
 import type { DashboardInsightResponse } from "../types/aiResponses";
 import { saveAIFeedback } from "../services/aiFeedback";
+import { v4 as uuidv4 } from "uuid";
+import {
+  getSessions,
+  getMistakes,
+  saveAIInteraction,
+} from "../services/storage";
 
 type StatItem = {
   label: string;
@@ -67,7 +72,9 @@ function AccBar({ acc }: { acc: number }) {
           style={{ width: `${acc}%` }}
         />
       </div>
-      <span className="tabular-nums text-[18px] font-medium text-gray-900">{acc}%</span>
+      <span className="tabular-nums text-[18px] font-medium text-gray-900">
+        {acc}%
+      </span>
     </div>
   );
 }
@@ -245,6 +252,14 @@ function DashboardPage() {
     );
     if (result) {
       setInsight(result);
+      await saveAIInteraction({
+        id: uuidv4(),
+        insightType: "dashboard_insight",
+        summary: result.headline,
+        response: result,
+        rating: null,
+        createdAt: new Date().toISOString(),
+      });
     } else {
       setError(true);
     }
@@ -293,10 +308,7 @@ function DashboardPage() {
             {/* Stats */}
             <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
               {STATS.map(({ label, value, delta, pos }) => (
-                <div
-                  key={label}
-                  className="rounded-xl bg-white p-5"
-                >
+                <div key={label} className="rounded-xl bg-white p-5">
                   <p className="mb-2 text-[13px] text-secondary">{label}</p>
                   <p className="tabular-nums text-[26px] font-bold leading-none text-gray-900">
                     {value}
@@ -312,7 +324,6 @@ function DashboardPage() {
                   >
                     {delta}
                   </p>
-
                 </div>
               ))}
             </div>
@@ -450,7 +461,9 @@ function DashboardPage() {
                             <p className="mb-1 text-[12px] text-secondary">
                               Priority topic
                             </p>
-                            <TopicPill topic={insight.evidence.topic as AMCTopic} />
+                            <TopicPill
+                              topic={insight.evidence.topic as AMCTopic}
+                            />
                           </div>
                         </div>
                         <p
