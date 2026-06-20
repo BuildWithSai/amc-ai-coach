@@ -5,11 +5,12 @@
  *
  * Visual treatment matches MistakesPage: layered surfaces, topic pill system, card-per-session layout.
  */
-import { useState, useEffect, Fragment } from "react";
+import { useState, Fragment } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import type { StudySession, AMCTopic } from "../types";
-import { getSessions, saveSession } from "../services/storage";
+import { saveSession } from "../services/storage";
+import { useStudySessions } from "../hooks/useStudySessions";
 import { AppShell } from "../components/AppShell";
 import { Button } from "../components/Button";
 import { SectionTitle } from "../components/SectionTitle";
@@ -32,9 +33,7 @@ function getMondayStr(ms: number): string {
 
 function getWeekLabel(mondayStr: string, thisWeekMonday: string): string {
   if (mondayStr === thisWeekMonday) return "This week";
-  const prevMondayStr = new Date(
-    new Date(thisWeekMonday).getTime() - 7 * DAY,
-  )
+  const prevMondayStr = new Date(new Date(thisWeekMonday).getTime() - 7 * DAY)
     .toISOString()
     .slice(0, 10);
   if (mondayStr === prevMondayStr) return "Last week";
@@ -57,16 +56,12 @@ function StudySessionsPage() {
   const [correct, setCorrect] = useState("");
   const [incorrect, setIncorrect] = useState("");
   const [notes, setNotes] = useState("");
-  const [sessions, setSessions] = useState<StudySession[]>([]);
+  const { sessions, loading, error, refetch } = useStudySessions();
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [validationError, setValidationError] = useState("");
   const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>(
     () => ({ [getMondayStr(Date.now())]: true }),
   );
-
-  useEffect(() => {
-    getSessions().then(setSessions);
-  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +80,7 @@ function StudySessionsPage() {
       notes: notes || undefined,
     };
     await saveSession(newSession);
-    setSessions(await getSessions());
+    await refetch();
     setAttempted("");
     setCorrect("");
     setIncorrect("");
@@ -106,11 +101,12 @@ function StudySessionsPage() {
   const thisWeekCount = sessions.filter(
     (s) => now - new Date(s.createdAt).getTime() < 7 * DAY,
   ).length;
-  const priorWeekCounts = [0, 1, 2, 3].map((i) =>
-    sessions.filter((s) => {
-      const age = now - new Date(s.createdAt).getTime();
-      return age >= (7 + i * 7) * DAY && age < (14 + i * 7) * DAY;
-    }).length,
+  const priorWeekCounts = [0, 1, 2, 3].map(
+    (i) =>
+      sessions.filter((s) => {
+        const age = now - new Date(s.createdAt).getTime();
+        return age >= (7 + i * 7) * DAY && age < (14 + i * 7) * DAY;
+      }).length,
   );
   const hasEnoughHistory = sessions.some(
     (s) => now - new Date(s.createdAt).getTime() >= 28 * DAY,
@@ -302,7 +298,10 @@ function StudySessionsPage() {
           title="Study Sessions"
           subtitle="Log your practice sessions to track performance over time."
         />
-
+        {loading && (
+          <p className="text-secondary text-[14px]">Loading sessions…</p>
+        )}
+        {error && <p className="text-danger text-[14px]">{error}</p>}
         {sessions.length === 0 ? (
           <>
             {formCard}
@@ -321,38 +320,48 @@ function StudySessionsPage() {
           <>
             {/* ── Summary cards ─────────────────────────────────────────── */}
             <div className="mb-6 grid grid-cols-3 gap-3 sm:gap-4">
-
               {/* Card 1 – This week */}
               <div className="rounded-xl bg-white p-5">
                 <p className="mb-2 text-[13px] text-secondary">This week</p>
-                <p className={`text-[24px] font-medium leading-none ${thisWeekValueColor}`}>
+                <p
+                  className={`text-[24px] font-medium leading-none ${thisWeekValueColor}`}
+                >
                   {thisWeekCount} session{thisWeekCount === 1 ? "" : "s"}
                 </p>
-                <p className="mt-2 text-[12px] text-secondary">{thisWeekSubtext}</p>
+                <p className="mt-2 text-[12px] text-secondary">
+                  {thisWeekSubtext}
+                </p>
               </div>
 
               {/* Card 2 – Most practiced */}
               <div className="rounded-xl bg-white p-5">
-                <p className="mb-2 text-[13px] text-secondary">Most practiced</p>
+                <p className="mb-2 text-[13px] text-secondary">
+                  Most practiced
+                </p>
                 {mostPracticedEntry ? (
                   <div className="mb-1">
                     <TopicPill topic={mostPracticedEntry[0]} />
                   </div>
                 ) : (
-                  <p className="text-[24px] font-medium leading-none text-gray-900">—</p>
+                  <p className="text-[24px] font-medium leading-none text-gray-900">
+                    —
+                  </p>
                 )}
-                <p className="mt-2 text-[12px] text-secondary">{mostPracticedSubtext}</p>
+                <p className="mt-2 text-[12px] text-secondary">
+                  {mostPracticedSubtext}
+                </p>
               </div>
 
               {/* Card 3 – Last logged */}
               <div className="rounded-xl bg-white p-5">
                 <p className="mb-2 text-[13px] text-secondary">Last logged</p>
-                <p className={`text-[24px] font-medium leading-none ${lastLoggedColor}`}>
+                <p
+                  className={`text-[24px] font-medium leading-none ${lastLoggedColor}`}
+                >
                   {lastLoggedText}
                 </p>
                 <p className="mt-2 text-[12px] text-secondary">{streakText}</p>
               </div>
-
             </div>
 
             {/* ── Form ──────────────────────────────────────────────────── */}
@@ -389,7 +398,8 @@ function StudySessionsPage() {
                         </span>
                       </div>
                       <span className="text-[13px] text-secondary">
-                        {weekSessions.length} session{weekSessions.length === 1 ? "" : "s"}
+                        {weekSessions.length} session
+                        {weekSessions.length === 1 ? "" : "s"}
                       </span>
                     </button>
 
@@ -452,7 +462,9 @@ function StudySessionsPage() {
                                   <p className="text-[11px] font-medium text-secondary">
                                     Accuracy
                                   </p>
-                                  <p className={`mt-0.5 tabular-nums text-[18px] font-medium ${accuracyColor}`}>
+                                  <p
+                                    className={`mt-0.5 tabular-nums text-[18px] font-medium ${accuracyColor}`}
+                                  >
                                     {accuracy}%
                                   </p>
                                 </div>
