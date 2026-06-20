@@ -3,7 +3,7 @@
  * Maps camelCase TS fields to snake_case DB columns on write, and back on read.
  * Errors are logged to the console; functions never throw to the caller.
  */
-import type { StudySession, Mistake } from "../types";
+import type { StudySession, Mistake, AIInteraction } from "../types";
 import { supabase } from "./supabase";
 
 export async function getSessions(): Promise<StudySession[]> {
@@ -72,4 +72,19 @@ export async function saveMistake(mistake: Mistake): Promise<void> {
     user_id: (await supabase.auth.getUser()).data.user?.id,
   });
   if (error) console.error("saveMistake error:", error);
+}
+
+export async function saveAIInteraction(
+  interaction: AIInteraction,
+): Promise<void> {
+  const { error } = await supabase.from("ai_interactions").insert({
+    id: interaction.id,
+    insight_type: interaction.insightType,
+    summary: interaction.summary,
+    response: interaction.response,
+    rating: interaction.rating,
+    created_at: interaction.createdAt,
+    user_id: (await supabase.auth.getUser()).data.user?.id,
+  });
+  if (error) console.error("saveAIInteraction error:", error);
 }

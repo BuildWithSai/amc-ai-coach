@@ -45,3 +45,12 @@ export interface MistakeFrequency {
   topic: AMCTopic;
   count: number;
 }
+
+export interface AIInteraction {
+  id: string;
+  insightType: string;
+  summary: string;
+  response: unknown;
+  rating: "helpful" | "not_helpful" | null;
+  createdAt: string;
+}

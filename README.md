@@ -27,7 +27,7 @@ It started as a way to help her study. It became a focused experiment in how to 
 │                                                         │
 │  getRankedWeakTopics()       → RankedTopic[]            │
 │  getMistakeFrequencyByTopic() → MistakeFrequency[]      │
-│  getPerformanceDelta()       → number                   │ │
+│  getPerformanceDelta()       → number                   │
 └──────────────────────────┬──────────────────────────────┘
                            │ pre-computed metrics only
                            ▼
@@ -56,7 +56,7 @@ It started as a way to help her study. It became a focused experiment in how to 
 │                   AIInsightCard.tsx                     │
 │                                                         │
 │  Renders computed evidence panel first                  │
-│  Then renders AI interpretation below it               │
+│  Then renders AI interpretation below it                │
 │  Thumbs up/down per insight → aiFeedback.ts             │
 └─────────────────────────────────────────────────────────┘
 ```
