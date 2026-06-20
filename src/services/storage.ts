@@ -88,3 +88,26 @@ export async function saveAIInteraction(
   });
   if (error) console.error("saveAIInteraction error:", error);
 }
+
+export async function getRecentAIInteractions(
+  limit: number,
+): Promise<AIInteraction[]> {
+  const { data, error } = await supabase
+    .from("ai_interactions")
+    .select("*")
+    .eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error("getRecentAIInteractions error:", error);
+    return [];
+  }
+  return data.map((row) => ({
+    id: row.id,
+    insightType: row.insight_type,
+    summary: row.summary,
+    response: row.response,
+    rating: row.rating,
+    createdAt: row.created_at,
+  }));
+}
