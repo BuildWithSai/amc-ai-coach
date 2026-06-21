@@ -4,6 +4,7 @@
  * the computed analytics and renders a coaching brief with evidence.
  */
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   TrendingDown,
   TrendingUp,
@@ -11,11 +12,14 @@ import {
   Lightbulb,
   ThumbsUp,
   ThumbsDown,
+  Calendar,
 } from "lucide-react";
 import { AppShell } from "../components/AppShell";
 import { Button } from "../components/Button";
 import { TopicPill } from "../constants/topicColors";
 import type { StudySession, Mistake, AMCTopic } from "../types";
+import { useUserProfile } from "../hooks/useUserProfile";
+import { getExamCountdown } from "../analytics/computeAnalytics";
 import {
   getRankedWeakTopics,
   getMistakeFrequencyByTopic,
@@ -129,6 +133,9 @@ function weekDeltaText(
 }
 
 function DashboardPage() {
+  const { profile } = useUserProfile();
+  const examCountdown = getExamCountdown(profile?.examDate ?? null);
+
   const [insight, setInsight] = useState<DashboardInsightResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -297,6 +304,58 @@ function DashboardPage() {
           >
             {loading ? "Generating…" : "Generate insight"}
           </Button>
+        </div>
+
+        {/* Exam Countdown Banner */}
+        <div className="mb-6">
+          {examCountdown !== null ? (
+            <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-warning/10">
+                <Calendar className="h-4 w-4 text-warning" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[11px] font-medium text-secondary">
+                  AMC Part 1 exam
+                </p>
+                <p className="text-[15px] font-semibold text-gray-900">
+                  {examCountdown.daysRemaining >= 0
+                    ? `${examCountdown.daysRemaining} days remaining`
+                    : "Exam date passed"}
+                </p>
+              </div>
+              <p
+                className={`text-[14px] font-medium ${
+                  examCountdown.status === "on_track"
+                    ? "text-success"
+                    : examCountdown.status === "getting_close"
+                      ? "text-warning"
+                      : "text-danger"
+                }`}
+              >
+                {examCountdown.status === "on_track"
+                  ? "on track"
+                  : examCountdown.status === "getting_close"
+                    ? "getting close"
+                    : "urgent"}
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                <Calendar className="h-4 w-4 text-secondary" />
+              </div>
+              <p className="text-[14px] text-secondary">
+                Set your exam date in{" "}
+                <Link
+                  to="/settings"
+                  className="font-medium text-[#0A84FF] hover:underline"
+                >
+                  Settings
+                </Link>{" "}
+                to see your countdown.
+              </p>
+            </div>
+          )}
         </div>
 
         {sessions.length === 0 ? (

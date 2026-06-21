@@ -7,6 +7,7 @@ import {
   Sparkles,
   BarChart3,
   Stethoscope,
+  Settings,
   Menu,
   X,
   LogOut,
@@ -29,6 +30,10 @@ const NAV_GROUPS = [
   {
     section: "AI",
     items: [{ to: "/ai-coach", icon: Sparkles, label: "AI Coach" }],
+  },
+  {
+    section: "Account",
+    items: [{ to: "/settings", icon: Settings, label: "Settings" }],
   },
 ];
 

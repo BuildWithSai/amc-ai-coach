@@ -10,6 +10,7 @@ import type {
   RankedTopic,
   MistakeFrequency,
   AMCTopic,
+  ExamCountdown,
 } from "../types";
 
 // ─── Weak Topics ──────────────────────────────────────────────────────────────
@@ -90,6 +91,28 @@ export function getPerformanceDelta(
     s.length;
 
   return Math.round(avg(secondHalf) - avg(firstHalf));
+}
+
+// ─── Exam Countdown ───────────────────────────────────────────────────────────
+
+// Returns days remaining until the exam and a status tier, or null if no exam date is set.
+export function getExamCountdown(examDate: string | null): ExamCountdown | null {
+  if (examDate === null) return null;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const msPerDay = 86_400_000;
+  const daysRemaining = Math.floor(
+    (new Date(examDate).getTime() - new Date(today).getTime()) / msPerDay,
+  );
+
+  const status =
+    daysRemaining < 7
+      ? "urgent"
+      : daysRemaining < 30
+        ? "getting_close"
+        : "on_track";
+
+  return { daysRemaining, status };
 }
 
 // ─── Internal Helper ──────────────────────────────────────────────────────────

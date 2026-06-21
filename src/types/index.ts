@@ -60,3 +60,8 @@ export interface UserProfile {
   weeklyHours: number | null;
   updatedAt: string;
 }
+
+export interface ExamCountdown {
+  daysRemaining: number;
+  status: "on_track" | "getting_close" | "urgent";
+}
