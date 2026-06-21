@@ -11,8 +11,10 @@ const labelCls =
 const inputCls =
   "w-full rounded-xl bg-gray-100 px-3 py-2.5 text-[14px] text-[#1C1C1E] outline-none transition-colors focus:bg-gray-50 focus:ring-2 focus:ring-[rgba(10,132,255,0.20)]";
 
+const numberInputCls = `${inputCls} tabular-nums`;
+
 const resetBtnCls =
-  "min-h-[44px] rounded-lg border border-black/[0.1] px-3 py-1.5 text-[13px] font-medium text-secondary transition-colors hover:bg-gray-100 hover:text-gray-900 md:min-h-0";
+  "min-h-[44px] rounded-lg border border-black/[0.1] px-3 py-1.5 text-[13px] font-medium text-secondary outline-none transition-all duration-150 ease-out hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-black/20 active:scale-[0.98] md:min-h-0";
 
 function SettingsPage() {
   const { profile, loading, error, refetch } = useUserProfile();
@@ -181,13 +183,16 @@ function SettingsPage() {
                 max="80"
                 value={weeklyHours}
                 onChange={(e) => setWeeklyHours(e.target.value)}
-                className={`${inputCls} tabular-nums`}
+                className={numberInputCls}
               />
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <Button
                   type="button"
                   onClick={handleSaveWeeklyHours}
-                  disabled={isSavingWeeklyHours}
+                  disabled={
+                    isSavingWeeklyHours ||
+                    weeklyHours === (profile?.weeklyHours?.toString() ?? "")
+                  }
                 >
                   {isSavingWeeklyHours ? "Saving…" : "Save weekly hours"}
                 </Button>
