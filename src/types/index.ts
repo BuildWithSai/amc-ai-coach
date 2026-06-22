@@ -22,6 +22,7 @@ export interface StudySession {
   attempted: number;
   correct: number;
   incorrect: number;
+  durationMinutes?: number;
   notes?: string;
 }
 

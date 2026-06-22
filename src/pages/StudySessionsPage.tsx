@@ -59,6 +59,7 @@ function StudySessionsPage() {
   const { sessions, loading, error, refetch } = useStudySessions();
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [validationError, setValidationError] = useState("");
+  const [duration, setDuration] = useState("");
   const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>(
     () => ({ [getMondayStr(Date.now())]: true }),
   );
@@ -77,6 +78,7 @@ function StudySessionsPage() {
       attempted: Number(attempted),
       correct: Number(correct),
       incorrect: Number(incorrect),
+      durationMinutes: duration ? Number(duration) : undefined,
       notes: notes || undefined,
     };
     await saveSession(newSession);
@@ -84,6 +86,7 @@ function StudySessionsPage() {
     setAttempted("");
     setCorrect("");
     setIncorrect("");
+    setDuration("");
     setNotes("");
     setHighlightId(newSession.id);
     setTimeout(() => setHighlightId(null), 900);
@@ -193,10 +196,24 @@ function StudySessionsPage() {
       </h2>
       <form onSubmit={handleSave} noValidate>
         {/* Row 1: topic select + connected number trio */}
-        <div className="mb-4 grid grid-cols-[160px_1fr] items-start gap-3">
+        <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-[160px_120px_1fr] sm:items-start">
           <div>
             <p className={labelCls}>Topic</p>
             <TopicSelect value={topic} onChange={setTopic} />
+          </div>
+          <div>
+            <p className={labelCls}>Duration(mins)</p>
+            <div className="rounded-xl bg-gray-100 px-3 py-2.5">
+              <input
+                id="session-duration"
+                type="number"
+                min="0"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                className="w-full bg-transparent tabular-nums text-[16px] font-medium text-gray-900 outline-none placeholder:text-gray-400"
+                placeholder="mins"
+              />
+            </div>
           </div>
           <div>
             <p className={labelCls}>Questions</p>

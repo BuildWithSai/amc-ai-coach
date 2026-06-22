@@ -27,6 +27,7 @@ export async function getSessions(): Promise<StudySession[]> {
     attempted: row.attempted,
     correct: row.correct,
     incorrect: row.incorrect,
+    durationMinutes: row.duration_minutes,
     notes: row.notes,
     createdAt: row.created_at,
   })) as StudySession[];
@@ -40,6 +41,7 @@ export async function saveSession(session: StudySession): Promise<void> {
     correct: session.correct,
     incorrect: session.incorrect,
     notes: session.notes,
+    duration_minutes: session.durationMinutes,
     created_at: session.createdAt,
     user_id: (await supabase.auth.getUser()).data.user?.id,
   });
